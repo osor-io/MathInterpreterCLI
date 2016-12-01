@@ -4,7 +4,8 @@
 %{
 #include <stdio.h>
 #include "../symbolTable/symbolTable.h"
-#include "../MICLI/LANG_WORDS.h"
+#include "./mainBison.tab.h"
+//#include "../MICLI/LANG_WORDS.h"
 
 
 /*
@@ -39,6 +40,7 @@ SciNo [Ee][+-]?{Digit}+
 
   /*-----------------RULES-----------------*/
 
+"help"		{/*Please*/return HELP;/*We are running out of food, water and lexical components*/}
 "exit"		{return QUIT;}
 "quit"		{return QUIT;}
 
@@ -58,15 +60,18 @@ SciNo [Ee][+-]?{Digit}+
         lexeme = (char *) malloc((strlen(yytext) + 1) * sizeof(char));
         strcpy(lexeme,yytext);
         sd->content=malloc(sizeof(variableContent));
-
+        ((variableContent*)(sd->content))->value=0;
+        ((variableContent*)(sd->content))->defined=0;
+        ((variableContent*)(sd->content))->name=lexeme;
+        yylval.pts=sd;
         /*So we add it*/
         addLex(&global_st, lexeme, sd);
-                        return(IDENTIFIER);
+        return(VARIABLE);
       }else{
         if (sd->type == TYPE_VARIABLE) {
         /*It is an identifier but it is on the table already*/
-          yylval.val = ((variableContent*)(sd->content))->value;
-          return(IDENTIFIER);
+          yylval.pts = sd;
+          return(VARIABLE);
         }else{
         /*It is a reserved word so we return that it is a one operator function*/
           yylval.pts=sd;
@@ -103,14 +108,7 @@ SciNo [Ee][+-]?{Digit}+
 
 "/"		  { return('/');}
 "/="	  { return(OPE_SLASH_EQ);}
-"."		  { return('.');}
-".."		{ return(OPE_TWO_POINTS);}
-"..."		{ return(OPE_THREE_POINTS);}
-"&"	  	{ return('&');}
-"&="		{ return(OPE_AND_EQ);}
 "&&"		{ return(OPE_AND_AND);}
-"|"		  { return('|');}
-"|="		{ return(OPE_VERT_EQ);}
 "||"		{ return(OPE_VERT_VERT);}
 "-"		  { return('-');}
 "-="		{ return(OPE_MINUS_EQ);}
@@ -120,50 +118,23 @@ SciNo [Ee][+-]?{Digit}+
 "++"		{ return(OPE_PLUS_PLUS);}
 "<"		  { return('<');}
 "<="		{ return(OPE_LESSTHAN_EQ);}
-"<<"		{ return(OPE_LESSTHAN_LESSTHAN);}
-"<<="		{ return(OPE_LESSTHAN_LESSTHAN_EQ);}
-"<>"		{ return(OPE_LESSTHAN_MORETHAN);}
-"<>="		{ return(OPE_LESSTHAN_MORETHAN_EQ);}
 ">"		  { return('>');}
 ">="		{ return(OPE_MORETHAN_EQ);}
-">>="		{ return(OPE_MORETHAN_MORETHAN_EQ);}
-">>>="	{ return(OPE_MORETHAN_MORETHAN_MORETHAN_EQ);}
-">>"		{ return(OPE_MORETHAN_MORETHAN);}
-">>>"		{ return(OPE_MORETHAN_MORETHAN_MORETHAN);}
 "!"		  { return('!');}
 "!="		{ return(OPE_EXCL_EQ);}
-"!<>"		{ return(OPE_EXCL_LESSTHAN_MORETHAN);}
-"!<>="	{ return(OPE_EXCL_LESSTHAN_MORETHAN_EQ);}
-"!<"		{ return(OPE_EXCL_LESSTHAN);}
-"!<="		{ return(OPE_EXCL_LESSTHAN_MORETHAN_EQ);}
-"!>"		{ return(OPE_EXCL_MORETHAN);}
-"!>="		{ return(OPE_EXCL_MORETHAN_EQ);}
 "("		{ return('(');}
 ")"		{ return(')');}
 "["		{ return('[');}
 "]"		{ return(']');}
-"{"		{ return('{');}      /*{*/
-"}"		{ return('}');}      /*}*/
-"?"		{ return('?');}
-","		{ return(',');}
 ";"		{ return(';');}
 ":"		{ return(':');}
-"$"		{ return('$');}
 "="		{ return('=');}
 "=="	{ return(OPE_EQ_EQ);}
 "*"		{ return('*');}
 "*="	{ return(OPE_TIMES_EQ);}
 "%"		{ return('%');}
 "%="	{ return(OPE_PERC_EQ);}
-"^"		{ return('^');}
-"^="	{ return(OPE_HAT_EQ);}
-"^^"	{ return(OPE_HAT_HAT);}
-"^^="	{ return(OPE_HAT_HAT_EQ);}
 "~"		{ return('~');}
-"~="	{ return(OPE_VIRG_EQ);}
-"@"		{ return('@');}
-"=>"	{ return(OPE_EQ_MORE);}
-"#"		{ return('#');}
 
     /*SPACES*/
 
@@ -173,4 +144,4 @@ SciNo [Ee][+-]?{Digit}+
 
     /*END OF FILE*/
 
-<<EOF>>       {return(END_OF_FILE);}
+<<EOF>> {return(END_OF_FILE);}

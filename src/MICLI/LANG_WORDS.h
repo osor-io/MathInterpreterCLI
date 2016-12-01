@@ -4,7 +4,7 @@
 #define IDENTIFIER 600
 //#define NEWLINE 601
 //#define FLOAT_VALUE 602
-#define ONE_OPERATOR_FUNCTION 603
+//#define ONE_OPERATOR_FUNCTION 603
 //#define QUIT 665
 #define END_OF_FILE 666
 

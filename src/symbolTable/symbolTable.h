@@ -30,6 +30,8 @@ typedef struct {
 
 typedef struct {
   double value;
+  unsigned short defined;
+  char* name;
 } variableContent;
 
 typedef enum {
@@ -52,5 +54,6 @@ void printSymbolTable(symbolTable *oSymbolTable);
 
 void printReservedWords(symbolTable *oSymbolTable);
 
+void printVariables(symbolTable *oSymbolTable);
 
 #endif //BDC_SYMBOLTABLE_H

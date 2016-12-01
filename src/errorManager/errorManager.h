@@ -10,7 +10,8 @@ typedef enum {
     ERR_BAD_SCI_NO,
     ERR_JUMP_LINE_IN_LITERAL,
     ERR_SCAPE_CHAR,
-    ERR_CANT_PARSE_FUNCTION
+    ERR_CANT_PARSE_FUNCTION,
+    ERR_BISON
 } errorType;
 
 

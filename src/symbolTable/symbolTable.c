@@ -69,8 +69,12 @@ void printSymbolTable(symbolTable *oSymbolTable) {
 }
 
 void printReservedWords(symbolTable *oSymbolTable){
-    printf(GRN "\n\nFUNCTIONS CURRENTLY SUPPORTED:\n\n" RESET);
+    printf(GRN "FUNCTIONS CURRENTLY SUPPORTED:\n" RESET);
     printDataSorted(*oSymbolTable->reserved,0);
 
+}
 
+void printVariables(symbolTable *oSymbolTable){
+    printf(GRN "\n\nVARIABLES CURRENTLY DEFINED:\n\n" RESET);
+    printDataSorted(*oSymbolTable->identifiers,0);
 }

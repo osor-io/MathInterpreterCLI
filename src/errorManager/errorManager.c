@@ -41,6 +41,9 @@ void printMessageFor(int code) {
         case ERR_CANT_PARSE_FUNCTION:
             printf("Function not supported for parsing");
             break;
+        case ERR_BISON:
+            printf("Bison detected an error");
+            break;
         default:
             printf("No message for that code.");
             break;
