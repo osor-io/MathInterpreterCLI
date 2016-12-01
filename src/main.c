@@ -1,47 +1,81 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
+#include <ctype.h>
+#include "symbolTable/symbolTable.h"
+#include "readerSystem/readerSystem.h"
 
-int main() {
-        printf("done");
-        return 0;
-}
+symbolTable *global_st = NULL;
+readerSystem *global_rs = NULL;
 
-#include <stdio.h>
-main ()
-{
-        init_table ();
-        yyparse ();
-}
-yyerror (s) /* Llamada por yyparse ante un error */
-char *s;
-{
-        printf ("%s\n", s);
-}
-struct init
-{
-        char *fname;
-        double (*fnct)();
-};
+#include "./Flex&Bison/mainBison.tab.c"
+#include "./Flex&Bison/lex.yy.c"
 
-struct init arith_fncts[]
-        = {
-        "sin", sin,
-        "cos", cos,
-        "atan", atan,
-        "ln", log,
-        "exp", exp,
-        "sqrt", sqrt,
-        0, 0
-        };
-/* La tabla de s´ımbolos: una cadena de ‘struct symrec’. */
-symrec *sym_table = (symrec *)0;
-init_table () /* pone las funciones aritm´eticas en una tabla. */
-{
-        int i;
-        symrec *ptr;
-        for (i = 0; arith_fncts[i].fname != 0; i++)
-        {
-                ptr = putsym (arith_fncts[i].fname, FNCT);
-                ptr->value.fnctptr = arith_fncts[i].fnct;
+#define MAX_INCLUDED_FILES 20
+
+int main(int argc, char **argv) {
+
+    char *filename = NULL;
+    char *ourPathToDefine = "./resources/RESERVED_WORDS.h";
+    char *includedPaths[MAX_INCLUDED_FILES];
+    int c, includedFileIndex = 0;
+
+    printf("\n");
+    if (argc == 1) {
+        printf("Starting with the default mode...\n");
+    } else {
+
+        while ((c = getopt(argc, argv, "i:f:")) != -1)
+            switch (c) {
+                case 'i':
+                    includedPaths[includedFileIndex++] = optarg;
+                    break;
+                case 'f':
+                    filename = optarg;
+                    break;
+                case '?':
+                    if (optopt == 'i' || optopt == 'f')
+                        fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                    else if (isprint(optopt))
+                        fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+                    else
+                        fprintf(stderr,
+                                "Unknown option character `\\x%x'.\n",
+                                optopt);
+                    return 1;
+                default:
+                    abort();
+            }
+
+        includedPaths[includedFileIndex] = NULL;
+        includedFileIndex = 0;
+
+        printf("Input file selected: %s\n", filename);
+        while (includedPaths[includedFileIndex] != NULL) {
+            printf("Included file: %s\n", includedPaths[includedFileIndex++]);
         }
+
+    }
+
+
+    //Init the symbol table
+    symbolTable *st = NULL;
+    initSymbolTable(&st, ourPathToDefine);
+    global_st = st;
+
+    return EXIT_SUCCESS;
+
+
+    //Init the reader system
+    readerSystem *rs = NULL;
+    initReaderSystem(&rs, filename);
+    global_rs = rs;
+
+
+
+
+
+    return EXIT_SUCCESS;
 }
+
+
