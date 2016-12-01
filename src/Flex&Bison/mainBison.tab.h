@@ -100,7 +100,7 @@
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 22 "mainBison.y"
+#line 24 "mainBison.y"
 {
         double val;
         symbolData *pts;

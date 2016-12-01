@@ -18,6 +18,8 @@ void checkDefined(variableContent *vc,unsigned short assign);
 
 %}
 
+/*%define parse.lac full*/
+%error-verbose
 
 %union {
         double val;

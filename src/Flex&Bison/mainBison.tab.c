@@ -157,7 +157,7 @@ void checkDefined(variableContent *vc,unsigned short assign);
 # undef YYERROR_VERBOSE
 # define YYERROR_VERBOSE 1
 #else
-# define YYERROR_VERBOSE 0
+# define YYERROR_VERBOSE 1
 #endif
 
 /* Enabling the token table.  */
@@ -167,7 +167,7 @@ void checkDefined(variableContent *vc,unsigned short assign);
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 22 "mainBison.y"
+#line 24 "mainBison.y"
 {
         double val;
         symbolData *pts;
@@ -486,10 +486,10 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    47,    47,    48,    51,    52,    53,    54,    55,    56,
-      57,    60,    61,    68,    74,    80,    86,    92,    98,   107,
-     110,   115,   116,   118,   119,   121,   122,   126,   127,   131,
-     132,   133,   138,   141,   142,   151,   159,   165,   174
+       0,    49,    49,    50,    53,    54,    55,    56,    57,    58,
+      59,    62,    63,    70,    76,    82,    88,    94,   100,   109,
+     112,   117,   118,   120,   121,   123,   124,   128,   129,   133,
+     134,   135,   140,   143,   144,   153,   161,   167,   176
 };
 #endif
 
@@ -1467,42 +1467,42 @@ yyreduce:
   switch (yyn)
     {
         case 5:
-#line 52 "mainBison.y"
+#line 54 "mainBison.y"
     { printf( BLU "\t%f\n" RESET, (yyvsp[(1) - (3)].val));;}
     break;
 
   case 6:
-#line 53 "mainBison.y"
+#line 55 "mainBison.y"
     { printf( BLU "\tOK\n" RESET );;}
     break;
 
   case 7:
-#line 54 "mainBison.y"
+#line 56 "mainBison.y"
     { yyerrok; ;}
     break;
 
   case 8:
-#line 55 "mainBison.y"
+#line 57 "mainBison.y"
     { printfHelp(); ;}
     break;
 
   case 9:
-#line 56 "mainBison.y"
+#line 58 "mainBison.y"
     { YYACCEPT; ;}
     break;
 
   case 10:
-#line 57 "mainBison.y"
+#line 59 "mainBison.y"
     { YYACCEPT; ;}
     break;
 
   case 11:
-#line 60 "mainBison.y"
+#line 62 "mainBison.y"
     { (yyval.val) = (yyvsp[(1) - (1)].val); ;}
     break;
 
   case 12:
-#line 61 "mainBison.y"
+#line 63 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (1)].pts)->content;
                                   checkDefined(vc,0);
@@ -1511,7 +1511,7 @@ yyreduce:
     break;
 
   case 13:
-#line 68 "mainBison.y"
+#line 70 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
                                   vc->value=(yyvsp[(3) - (3)].val);
@@ -1521,7 +1521,7 @@ yyreduce:
     break;
 
   case 14:
-#line 74 "mainBison.y"
+#line 76 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
                                   vc->value/=(yyvsp[(3) - (3)].val);
@@ -1531,7 +1531,7 @@ yyreduce:
     break;
 
   case 15:
-#line 80 "mainBison.y"
+#line 82 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
                                   vc->value-=(yyvsp[(3) - (3)].val);
@@ -1541,7 +1541,7 @@ yyreduce:
     break;
 
   case 16:
-#line 86 "mainBison.y"
+#line 88 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
                                   vc->value+=(yyvsp[(3) - (3)].val);
@@ -1551,7 +1551,7 @@ yyreduce:
     break;
 
   case 17:
-#line 92 "mainBison.y"
+#line 94 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
                                   vc->value*=(yyvsp[(3) - (3)].val);
@@ -1561,7 +1561,7 @@ yyreduce:
     break;
 
   case 18:
-#line 98 "mainBison.y"
+#line 100 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
                                   vc->value=fmod(vc->value,(yyvsp[(3) - (3)].val));
@@ -1571,87 +1571,87 @@ yyreduce:
     break;
 
   case 19:
-#line 107 "mainBison.y"
+#line 109 "mainBison.y"
     { (yyval.val) = ((yyvsp[(1) - (3)].val) || (yyvsp[(3) - (3)].val));}
     break;
 
   case 20:
-#line 110 "mainBison.y"
+#line 112 "mainBison.y"
     { (yyval.val) = ((yyvsp[(1) - (3)].val) && (yyvsp[(3) - (3)].val));}
     break;
 
   case 21:
-#line 115 "mainBison.y"
+#line 117 "mainBison.y"
     { (yyval.val) = ((yyvsp[(1) - (3)].val) == (yyvsp[(3) - (3)].val));}
     break;
 
   case 22:
-#line 116 "mainBison.y"
+#line 118 "mainBison.y"
     { (yyval.val) = ((yyvsp[(1) - (3)].val) != (yyvsp[(3) - (3)].val));}
     break;
 
   case 23:
-#line 118 "mainBison.y"
+#line 120 "mainBison.y"
     { (yyval.val) = ((yyvsp[(1) - (3)].val) > (yyvsp[(3) - (3)].val));}
     break;
 
   case 24:
-#line 119 "mainBison.y"
+#line 121 "mainBison.y"
     { (yyval.val) = ((yyvsp[(1) - (3)].val) >= (yyvsp[(3) - (3)].val));}
     break;
 
   case 25:
-#line 121 "mainBison.y"
+#line 123 "mainBison.y"
     { (yyval.val) = ((yyvsp[(1) - (3)].val) < (yyvsp[(3) - (3)].val));}
     break;
 
   case 26:
-#line 122 "mainBison.y"
+#line 124 "mainBison.y"
     { (yyval.val) = ((yyvsp[(1) - (3)].val) <= (yyvsp[(3) - (3)].val));}
     break;
 
   case 27:
-#line 126 "mainBison.y"
+#line 128 "mainBison.y"
     { (yyval.val) = (yyvsp[(1) - (3)].val) + (yyvsp[(3) - (3)].val); ;}
     break;
 
   case 28:
-#line 127 "mainBison.y"
+#line 129 "mainBison.y"
     { (yyval.val) = (yyvsp[(1) - (3)].val) - (yyvsp[(3) - (3)].val); ;}
     break;
 
   case 29:
-#line 131 "mainBison.y"
+#line 133 "mainBison.y"
     { (yyval.val) = (yyvsp[(1) - (3)].val) * (yyvsp[(3) - (3)].val); ;}
     break;
 
   case 30:
-#line 132 "mainBison.y"
+#line 134 "mainBison.y"
     { (yyval.val) = (yyvsp[(1) - (3)].val) / (yyvsp[(3) - (3)].val); ;}
     break;
 
   case 31:
-#line 133 "mainBison.y"
+#line 135 "mainBison.y"
     { (yyval.val) = fmod((yyvsp[(1) - (3)].val),(yyvsp[(3) - (3)].val)); ;}
     break;
 
   case 32:
-#line 138 "mainBison.y"
+#line 140 "mainBison.y"
     { (yyval.val) = !((yyvsp[(2) - (2)].val)); ;}
     break;
 
   case 33:
-#line 141 "mainBison.y"
+#line 143 "mainBison.y"
     { (yyval.val) = -(yyvsp[(2) - (2)].val);;}
     break;
 
   case 34:
-#line 142 "mainBison.y"
+#line 144 "mainBison.y"
     { (yyval.val) = (yyvsp[(2) - (2)].val);;}
     break;
 
   case 35:
-#line 151 "mainBison.y"
+#line 153 "mainBison.y"
     {
                                   functionContent *fc= (functionContent*) (yyvsp[(1) - (4)].pts)->content;
                                   (yyval.val) = (*(fc->funcPointer))((yyvsp[(3) - (4)].val));
@@ -1659,7 +1659,7 @@ yyreduce:
     break;
 
   case 36:
-#line 159 "mainBison.y"
+#line 161 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (2)].pts)->content;
                                   vc->value++;
@@ -1669,7 +1669,7 @@ yyreduce:
     break;
 
   case 37:
-#line 165 "mainBison.y"
+#line 167 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (2)].pts)->content;
                                   vc->value--;
@@ -1679,7 +1679,7 @@ yyreduce:
     break;
 
   case 38:
-#line 174 "mainBison.y"
+#line 176 "mainBison.y"
     { (yyval.val) = (yyvsp[(2) - (3)].val); ;}
     break;
 
@@ -1899,7 +1899,7 @@ yyreturn:
 }
 
 
-#line 179 "mainBison.y"
+#line 181 "mainBison.y"
 
 
 void yyerror (char *s){
