@@ -63,6 +63,10 @@ int main(int argc, char **argv) {
     initSymbolTable(&st, ourPathToDefine);
     global_st = st;
 
+    printf("\n\nWelcome to WolframBeta 0.1: \n\n");
+
+    yyparse();
+
     return EXIT_SUCCESS;
 
 
@@ -70,9 +74,6 @@ int main(int argc, char **argv) {
     readerSystem *rs = NULL;
     initReaderSystem(&rs, filename);
     global_rs = rs;
-
-
-
 
 
     return EXIT_SUCCESS;

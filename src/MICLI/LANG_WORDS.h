@@ -2,10 +2,13 @@
 #define LANG_WORDS_H
 
 #define IDENTIFIER 600
-#define NEWLINE 601
-#define FLOAT_VALUE 602
-#define QUIT 665
+//#define NEWLINE 601
+//#define FLOAT_VALUE 602
+#define ONE_OPERATOR_FUNCTION 603
+//#define QUIT 665
 #define END_OF_FILE 666
+
+
 
 //OPERATORS
 #define OPE_SLASH_EQ 900

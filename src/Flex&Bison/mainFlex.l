@@ -31,6 +31,8 @@ Identifier {IdentifierStart}{IdentifierChar}*
 
 Digit [0-9]
 
+HexDigit [0-9A-F]
+
 SciNo [Ee][+-]?{Digit}+
 
 %%
@@ -63,7 +65,7 @@ SciNo [Ee][+-]?{Digit}+
       }else{
         if (sd->type == TYPE_VARIABLE) {
         /*It is an identifier but it is on the table already*/
-          yylval.val = sd->content->value;
+          yylval.val = ((variableContent*)(sd->content))->value;
           return(IDENTIFIER);
         }else{
         /*It is a reserved word so we return that it is a one operator function*/
@@ -75,10 +77,17 @@ SciNo [Ee][+-]?{Digit}+
 
   /*INTEGER LITERALS*/
 
-{Digit}({Digit}|_)* 	{
+{Digit}({Digit})* 	{
                   yylval.val = atof(yytext);
                   return(FLOAT_VALUE);
 						          }
+
+  /*HEXADECIMAL LITERALS*/
+
+("0x"|"0X"){HexDigit}({HexDigit})* 	{
+                  yylval.val = atof(yytext);
+                  return(FLOAT_VALUE);
+                      }
 
 
 	/*FLOATING LITERALS*/
