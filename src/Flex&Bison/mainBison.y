@@ -621,6 +621,10 @@ EXPRESSION: FLOAT_VALUE          {
                                     yyerror("Second expression cannot be a matrix");
                                     YYERROR;
                                   }
+                                  if($3.values[0][0]==0){
+                                    yyerror("You cannot divide by zero");
+                                    YYERROR;
+                                  }
                                   int i,j;
                                   copyExpression(&$$,&$1);
                                   for (i=0;i<$1.rows;i++){
