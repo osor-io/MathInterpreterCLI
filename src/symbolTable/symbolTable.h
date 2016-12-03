@@ -29,10 +29,18 @@ typedef struct {
 } functionContent;
 
 typedef struct {
-  double value;
+    double** values;
+    short rows;
+    short columns;
+    short defAsMatrix;
+} variableValue;
+
+typedef struct {
+  variableValue value;
   unsigned short defined;
   char* name;
 } variableContent;
+
 
 typedef enum {
     TYPE_VARIABLE,
@@ -40,7 +48,7 @@ typedef enum {
 } symbolType;
 
 
-void initSymbolTable(symbolTable **oSymbolTable, char *pathToDefineFile);
+void initSymbolTable(symbolTable **oSymbolTable);
 
 void deleteSymbolTable(symbolTable **oSymbolTable);
 

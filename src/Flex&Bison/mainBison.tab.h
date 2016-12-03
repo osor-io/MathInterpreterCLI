@@ -64,7 +64,11 @@
      NEWLINE = 280,
      QUIT = 281,
      HELP = 282,
-     NEGATE = 283
+     DECLARE = 283,
+     EXISTS_VARIABLE = 284,
+     CLEAR_VARIABLES = 285,
+     LIST_VARIABLES = 286,
+     NEGATE = 287
    };
 #endif
 /* Tokens.  */
@@ -93,20 +97,25 @@
 #define NEWLINE 280
 #define QUIT 281
 #define HELP 282
-#define NEGATE 283
+#define DECLARE 283
+#define EXISTS_VARIABLE 284
+#define CLEAR_VARIABLES 285
+#define LIST_VARIABLES 286
+#define NEGATE 287
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 24 "mainBison.y"
+#line 34 "mainBison.y"
 {
+        variableValue matrixVal;
         double val;
         symbolData *pts;
 }
 /* Line 1529 of yacc.c.  */
-#line 110 "mainBison.tab.h"
+#line 119 "mainBison.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

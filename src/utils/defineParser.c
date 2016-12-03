@@ -5,7 +5,7 @@
 #include <math.h>
 #include <string.h>
 
-//TODO: Redo this.
+
 /*
 void parseReservedWords(symbolTable **oSymbolTable, char *pathToDefineFile) {
 
@@ -184,7 +184,7 @@ void getNameOf(unsigned short index, char *name) {
     return;
 }
 
-void parseReservedWords(symbolTable **oSymbolTable, char *pathToDefineFile) {
+void parseFunctions(symbolTable **oSymbolTable) {
     char *key = NULL;
     unsigned short index = 0;
     while (functions[index]) {
@@ -198,8 +198,5 @@ void parseReservedWords(symbolTable **oSymbolTable, char *pathToDefineFile) {
         addElement(((*oSymbolTable)->reserved), key, (void *) msymbolData);
         index++;
     }
-
     printReservedWords(*oSymbolTable);
-
-
 }

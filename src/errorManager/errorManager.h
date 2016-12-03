@@ -11,7 +11,8 @@ typedef enum {
     ERR_JUMP_LINE_IN_LITERAL,
     ERR_SCAPE_CHAR,
     ERR_CANT_PARSE_FUNCTION,
-    ERR_BISON
+    ERR_BISON,
+    WAR_BISON
 } errorType;
 
 
@@ -22,6 +23,9 @@ void manageNonFatalErrorWithLine(int code, char *message, int line, int position
 void manageFatalError(int code, char *message);
 
 void manageFatalErrorWithLine(int code, char *message, int line, int position);
+
+void manageWarning(int code, char *message);
+
 
 
 #endif //BDC_ERRORMANAGER_H

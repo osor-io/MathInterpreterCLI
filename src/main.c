@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
 
     //Init the symbol table
     symbolTable *st = NULL;
-    initSymbolTable(&st, ourPathToDefine);
+    initSymbolTable(&st);
     global_st = st;
 
     printf("\n\nWelcome to WolframBeta 0.1: \n\n");

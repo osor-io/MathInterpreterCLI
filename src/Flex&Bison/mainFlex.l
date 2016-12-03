@@ -40,11 +40,22 @@ SciNo [Ee][+-]?{Digit}+
 
   /*-----------------RULES-----------------*/
 
+  /*RESERVED WORDS*/
+
+("true"|"TRUE")   {yylval.val = 1;
+                return(FLOAT_VALUE);}
+("false"|"FALSE") {yylval.val = 0;
+                return(FLOAT_VALUE);}
+
+"exist"   {return EXISTS_VARIABLE;}
+"clear"   {return CLEAR_VARIABLES;}
+"who"     {return LIST_VARIABLES;}
+"dec"     {return DECLARE;}
 "help"		{/*Please*/return HELP;/*We are running out of food, water and lexical components*/}
 "exit"		{return QUIT;}
 "quit"		{return QUIT;}
 
-  /*IDENTIFIERS OR RESERVED WORDS*/
+  /*IDENTIFIERS OR FUNCTIONS*/
 
 {Identifier}    {
       /*
@@ -60,7 +71,21 @@ SciNo [Ee][+-]?{Digit}+
         lexeme = (char *) malloc((strlen(yytext) + 1) * sizeof(char));
         strcpy(lexeme,yytext);
         sd->content=malloc(sizeof(variableContent));
-        ((variableContent*)(sd->content))->value=0;
+
+        /*((variableContent*)(sd->content))->value;*/
+
+        ((variableContent*)(sd->content))->value.rows=1;
+        ((variableContent*)(sd->content))->value.columns=1;
+
+
+        ((variableContent*)(sd->content))->value.values = malloc(1 * sizeof(double*));
+        for (int i = 0; i < 1; i++) {
+              ((variableContent*)(sd->content))->value.values[i] = malloc(1 * sizeof(double));
+        }
+
+        ((variableContent*)(sd->content))->value.defAsMatrix=0;
+
+
         ((variableContent*)(sd->content))->defined=0;
         ((variableContent*)(sd->content))->name=lexeme;
         yylval.pts=sd;

@@ -11,14 +11,14 @@ extern symbolTable *global_st;
  * including the hash tables
  *
  * */
-void initSymbolTable(symbolTable **oSymbolTable, char *pathToDefineFile) {
+void initSymbolTable(symbolTable **oSymbolTable) {
     *oSymbolTable = (symbolTable *) malloc(
             sizeof(symbolTable));                                   //We reserve memory for the struct of the symbol table
     global_st = *oSymbolTable;                                      //Update the global pointer for the error manager
     initHashTable(&((*oSymbolTable)->identifiers));                 //And for both hash tables we use
     initHashTable(&((*oSymbolTable)->reserved));
 
-    parseReservedWords(oSymbolTable, pathToDefineFile);             //We parse the reserved words from a file with the parser.
+    parseFunctions(oSymbolTable);             //We parse the reserved words from a file with the parser.
 
 }
 

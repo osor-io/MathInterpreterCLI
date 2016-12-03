@@ -91,7 +91,11 @@
      NEWLINE = 280,
      QUIT = 281,
      HELP = 282,
-     NEGATE = 283
+     DECLARE = 283,
+     EXISTS_VARIABLE = 284,
+     CLEAR_VARIABLES = 285,
+     LIST_VARIABLES = 286,
+     NEGATE = 287
    };
 #endif
 /* Tokens.  */
@@ -120,7 +124,11 @@
 #define NEWLINE 280
 #define QUIT 281
 #define HELP 282
-#define NEGATE 283
+#define DECLARE 283
+#define EXISTS_VARIABLE 284
+#define CLEAR_VARIABLES 285
+#define LIST_VARIABLES 286
+#define NEGATE 287
 
 
 
@@ -131,6 +139,7 @@
 #include <math.h>
 #include "../symbolTable/symbolTable.h"
 #include <stdio.h>
+#include <string.h>
 #include "../utils/colours.h"
 #include "./CLIHelp.h"
 #include "../errorManager/errorManager.h"
@@ -143,7 +152,15 @@ extern symbolTable *global_st;
 extern int yylex();
 extern int yyparse();
 void yyerror(char* s);
-void checkDefined(variableContent *vc,unsigned short assign);
+void showWarning(char *s);
+short defined(variableContent *vc,unsigned short assign);
+short isMatrix(variableContent *vc);
+short isInBounds(int x, int y,variableContent *vc);
+
+void copyMatrix (void * destmat, variableContent *vc) {
+  memcpy(destmat,vc->value.values, vc->value.rows*vc->value.columns*sizeof(double));
+}
+
 
 
 
@@ -167,13 +184,14 @@ void checkDefined(variableContent *vc,unsigned short assign);
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 24 "mainBison.y"
+#line 34 "mainBison.y"
 {
+        variableValue matrixVal;
         double val;
         symbolData *pts;
 }
 /* Line 193 of yacc.c.  */
-#line 177 "mainBison.tab.c"
+#line 195 "mainBison.tab.c"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
@@ -186,7 +204,7 @@ typedef union YYSTYPE
 
 
 /* Line 216 of yacc.c.  */
-#line 190 "mainBison.tab.c"
+#line 208 "mainBison.tab.c"
 
 #ifdef short
 # undef short
@@ -401,20 +419,20 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  2
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   217
+#define YYLAST   379
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  46
+#define YYNTOKENS  50
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  4
+#define YYNNTS  7
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  38
+#define YYNRULES  45
 /* YYNRULES -- Number of states.  */
-#define YYNSTATES  71
+#define YYNSTATES  98
 
 /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   283
+#define YYMAXUTOK   287
 
 #define YYTRANSLATE(YYX)						\
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -428,7 +446,7 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,    29,     2,     2,     2,    39,    13,     2,
       11,    12,     9,     7,     2,     8,     2,    10,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,    38,
-      21,    44,    25,     2,     2,     2,     2,     2,     2,     2,
+      21,    48,    25,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,    35,     2,    37,     2,     2,     2,     2,     2,     2,
@@ -450,7 +468,7 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,    14,    16,    17,    18,    19,    20,    22,    23,
       24,    26,    27,    28,    30,    31,    32,    33,    34,    36,
-      41,    42,    43,    45
+      41,    42,    43,    44,    45,    46,    47,    49
 };
 
 #if YYDEBUG
@@ -458,38 +476,44 @@ static const yytype_uint8 yytranslate[] =
    YYRHS.  */
 static const yytype_uint8 yyprhs[] =
 {
-       0,     0,     3,     4,     7,     9,    13,    16,    19,    22,
-      25,    27,    29,    31,    35,    39,    43,    47,    51,    55,
-      59,    63,    67,    71,    75,    79,    83,    87,    91,    95,
-      99,   103,   107,   110,   113,   116,   121,   124,   127
+       0,     0,     3,     4,     7,     9,    12,    16,    20,    23,
+      26,    29,    32,    34,    35,    36,    54,    56,    58,    62,
+      66,    70,    74,    78,    82,    86,    90,    94,    98,   102,
+     106,   110,   114,   118,   122,   126,   130,   134,   137,   140,
+     143,   151,   156,   161,   164,   167
 };
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
 static const yytype_int8 yyrhs[] =
 {
-      47,     0,    -1,    -1,    47,    48,    -1,    41,    -1,    49,
-      38,    41,    -1,    49,    41,    -1,     1,    41,    -1,    43,
-      41,    -1,    42,    41,    -1,     6,    -1,     3,    -1,     4,
-      -1,     4,    44,    49,    -1,     4,    14,    49,    -1,     4,
-      18,    49,    -1,     4,    20,    49,    -1,     4,    33,    49,
-      -1,     4,    34,    49,    -1,    49,    17,    49,    -1,    49,
-      16,    49,    -1,    49,    32,    49,    -1,    49,    31,    49,
-      -1,    49,    25,    49,    -1,    49,    27,    49,    -1,    49,
-      21,    49,    -1,    49,    23,    49,    -1,    49,     7,    49,
-      -1,    49,     8,    49,    -1,    49,     9,    49,    -1,    49,
-      10,    49,    -1,    49,    39,    49,    -1,    29,    49,    -1,
-       8,    49,    -1,     7,    49,    -1,     5,    11,    49,    12,
-      -1,     4,    22,    -1,     4,    19,    -1,    11,    49,    12,
+      51,     0,    -1,    -1,    51,    52,    -1,    41,    -1,    53,
+      41,    -1,    53,    38,    41,    -1,    56,    38,    41,    -1,
+      56,    41,    -1,     1,    41,    -1,    43,    41,    -1,    42,
+      41,    -1,     6,    -1,    -1,    -1,    44,     4,    35,    56,
+      37,    35,    56,    37,    54,    44,     4,    35,    56,    37,
+      55,    44,     4,    -1,     3,    -1,     4,    -1,     4,    48,
+      56,    -1,     4,    14,    56,    -1,     4,    18,    56,    -1,
+       4,    20,    56,    -1,     4,    33,    56,    -1,     4,    34,
+      56,    -1,    56,    17,    56,    -1,    56,    16,    56,    -1,
+      56,    32,    56,    -1,    56,    31,    56,    -1,    56,    25,
+      56,    -1,    56,    27,    56,    -1,    56,    21,    56,    -1,
+      56,    23,    56,    -1,    56,     7,    56,    -1,    56,     8,
+      56,    -1,    56,     9,    56,    -1,    56,    10,    56,    -1,
+      56,    39,    56,    -1,    29,    56,    -1,     8,    56,    -1,
+       7,    56,    -1,     4,    35,    56,    37,    35,    56,    37,
+      -1,     4,    35,    56,    37,    -1,     5,    11,    56,    12,
+      -1,     4,    22,    -1,     4,    19,    -1,    11,    56,    12,
       -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
-static const yytype_uint8 yyrline[] =
+static const yytype_uint16 yyrline[] =
 {
-       0,    49,    49,    50,    53,    54,    55,    56,    57,    58,
-      59,    62,    63,    70,    76,    82,    88,    94,   100,   109,
-     112,   117,   118,   120,   121,   123,   124,   128,   129,   133,
-     134,   135,   140,   143,   144,   153,   161,   167,   176
+       0,    65,    65,    66,    69,    70,    71,    72,    73,    74,
+      75,    76,    77,    84,   106,    84,   140,   141,   154,   166,
+     178,   190,   202,   214,   229,   232,   237,   238,   240,   241,
+     243,   244,   248,   249,   253,   254,   255,   260,   263,   264,
+     268,   290,   315,   323,   335,   350
 };
 #endif
 
@@ -507,7 +531,9 @@ static const char *const yytname[] =
   "OPE_MORETHAN_MORETHAN_EQ", "'!'", "OPE_MORETHAN_MORETHAN",
   "OPE_EXCL_EQ", "OPE_EQ_EQ", "OPE_TIMES_EQ", "OPE_PERC_EQ", "'['",
   "OPE_HAT_EQ", "']'", "';'", "'%'", "'~'", "NEWLINE", "QUIT", "HELP",
-  "'='", "NEGATE", "$accept", "calculation", "line", "EXPRESSION", 0
+  "DECLARE", "EXISTS_VARIABLE", "CLEAR_VARIABLES", "LIST_VARIABLES", "'='",
+  "NEGATE", "$accept", "calculation", "line", "declaration", "@1", "@2",
+  "EXPRESSION", 0
 };
 #endif
 
@@ -520,26 +546,28 @@ static const yytype_uint16 yytoknum[] =
       47,    40,    41,    38,   262,   124,   263,   264,   265,   266,
      267,    60,   268,   269,   270,    62,   271,   272,   273,    33,
      274,   275,   276,   277,   278,    91,   279,    93,    59,    37,
-     126,   280,   281,   282,    61,   283
+     126,   280,   281,   282,   283,   284,   285,   286,    61,   287
 };
 # endif
 
 /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    46,    47,    47,    48,    48,    48,    48,    48,    48,
-      48,    49,    49,    49,    49,    49,    49,    49,    49,    49,
-      49,    49,    49,    49,    49,    49,    49,    49,    49,    49,
-      49,    49,    49,    49,    49,    49,    49,    49,    49
+       0,    50,    51,    51,    52,    52,    52,    52,    52,    52,
+      52,    52,    52,    54,    55,    53,    56,    56,    56,    56,
+      56,    56,    56,    56,    56,    56,    56,    56,    56,    56,
+      56,    56,    56,    56,    56,    56,    56,    56,    56,    56,
+      56,    56,    56,    56,    56,    56
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
-       0,     2,     0,     2,     1,     3,     2,     2,     2,     2,
-       1,     1,     1,     3,     3,     3,     3,     3,     3,     3,
+       0,     2,     0,     2,     1,     2,     3,     3,     2,     2,
+       2,     2,     1,     0,     0,    17,     1,     1,     3,     3,
        3,     3,     3,     3,     3,     3,     3,     3,     3,     3,
-       3,     3,     2,     2,     2,     4,     2,     2,     3
+       3,     3,     3,     3,     3,     3,     3,     2,     2,     2,
+       7,     4,     4,     2,     2,     3
 };
 
 /* YYDEFACT[STATE-NAME] -- Default rule to reduce with in state
@@ -547,41 +575,45 @@ static const yytype_uint8 yyr2[] =
    means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       2,     0,     1,     0,    11,    12,     0,    10,     0,     0,
-       0,     0,     4,     0,     0,     3,     0,     7,     0,     0,
-      37,     0,    36,     0,     0,     0,     0,    34,    33,     0,
-      32,     9,     8,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     6,    14,    15,
-      16,    17,    18,    13,     0,    38,    27,    28,    29,    30,
-      20,    19,    25,    26,    23,    24,    22,    21,     5,    31,
-      35
+       2,     0,     1,     0,    16,    17,     0,    12,     0,     0,
+       0,     0,     4,     0,     0,     0,     3,     0,     0,     9,
+       0,     0,    44,     0,    43,     0,     0,     0,     0,     0,
+      39,    38,     0,    37,    11,    10,     0,     0,     5,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     8,    19,    20,    21,    22,    23,     0,
+      18,     0,    45,     0,     6,    32,    33,    34,    35,    25,
+      24,    30,    31,    28,    29,    27,    26,     7,    36,    41,
+      42,     0,     0,     0,     0,     0,    40,     0,    13,     0,
+       0,     0,     0,     0,    14,     0,     0,    15
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     1,    15,    16
+      -1,     1,    16,    17,    89,    95,    18
 };
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-#define YYPACT_NINF -40
+#define YYPACT_NINF -37
 static const yytype_int16 yypact[] =
 {
-     -40,     0,   -40,   -39,   -40,    67,    -2,   -40,   188,   188,
-     188,   188,   -40,   -31,   -29,   -40,    52,   -40,   188,   188,
-     -40,   188,   -40,   188,   188,   188,   188,   158,   -40,    87,
-     139,   -40,   -40,   188,   188,   188,   188,   188,   188,   188,
-     188,   188,   188,   188,   188,   -28,   188,   -40,   139,   139,
-     139,   139,   139,   139,   113,   -40,   158,   158,   -40,   -40,
-       5,     5,     5,     5,     5,     5,     5,     5,   -40,   -40,
-     -40
+     -37,    46,   -37,   -36,   -37,    47,    -5,   -37,   350,   350,
+     350,   350,   -37,   -33,   -32,     6,   -37,   -34,    84,   -37,
+     350,   350,   -37,   350,   -37,   350,   350,   350,   350,   350,
+     320,   -37,   119,   301,   -37,   -37,   -24,   -27,   -37,   350,
+     350,   350,   350,   350,   350,   350,   350,   350,   350,   350,
+     350,   -25,   350,   -37,   301,   301,   301,   301,   301,   145,
+     301,   171,   -37,   350,   -37,   320,   320,   -37,   -37,    17,
+      17,    17,    17,    17,    17,    17,    17,   -37,   -37,   -13,
+     -37,   197,   350,   -12,   223,   350,   -37,   249,   -37,   -20,
+      21,    -7,   350,   275,   -37,   -15,    26,   -37
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -40,   -40,   -40,    12
+     -37,   -37,   -37,   -37,   -37,   -37,    -8
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -591,68 +623,102 @@ static const yytype_int8 yypgoto[] =
 #define YYTABLE_NINF -1
 static const yytype_uint8 yytable[] =
 {
-       2,     3,    17,     4,     5,     6,     7,     8,     9,    26,
-      31,    10,    32,    68,    35,    36,     0,     0,     0,     0,
-      27,    28,    29,    30,     0,     0,     0,     0,     0,    11,
-      48,    49,     0,    50,     0,    51,    52,    53,    54,     0,
-       0,    12,    13,    14,    46,    56,    57,    58,    59,    60,
-      61,    62,    63,    64,    65,    66,    67,     0,    69,    33,
-      34,    35,    36,     0,     0,     0,     0,     0,    37,    38,
-       0,     0,     0,    39,     0,    40,     0,    41,     0,    42,
-       0,    18,     0,    43,    44,    19,    20,    21,     0,    22,
-      45,    46,     0,    47,    33,    34,    35,    36,     0,    55,
-      23,    24,     0,    37,    38,     0,     0,     0,    39,     0,
-      40,    25,    41,     0,    42,     0,     0,     0,    43,    44,
-      33,    34,    35,    36,     0,    70,    46,     0,     0,    37,
-      38,     0,     0,     0,    39,     0,    40,     0,    41,     0,
-      42,     0,     0,     0,    43,    44,    33,    34,    35,    36,
-       0,     0,    46,     0,     0,    37,    38,     0,     0,     0,
-      39,     0,    40,     0,    41,     0,    42,    35,    36,     0,
-      43,    44,     0,     0,    37,    38,     0,     0,    46,    39,
-       0,    40,     0,    41,     0,    42,     0,     0,     0,    43,
-      44,     4,     5,     6,     0,     8,     9,    46,     0,    10,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,    11
+      30,    31,    32,    33,    37,    19,    29,    38,    34,    35,
+      36,    63,    54,    55,    64,    56,    77,    57,    58,    59,
+      60,    61,    82,    85,    90,    91,    41,    42,    92,    96,
+      97,    65,    66,    67,    68,    69,    70,    71,    72,    73,
+      74,    75,    76,     0,    78,     0,     2,     3,     0,     4,
+       5,     6,     7,     8,     9,    81,    52,    10,     0,     0,
+       0,    20,     0,     0,     0,    21,    22,    23,     0,    24,
+       0,     0,     0,     0,    84,    11,     0,    87,     0,     0,
+      25,    26,    27,     0,    93,     0,     0,    12,    13,    14,
+      15,    39,    40,    41,    42,    28,     0,     0,     0,     0,
+      43,    44,     0,     0,     0,    45,     0,    46,     0,    47,
+       0,    48,     0,     0,     0,    49,    50,     0,     0,     0,
+       0,     0,    51,    52,     0,    53,    39,    40,    41,    42,
+       0,    62,     0,     0,     0,    43,    44,     0,     0,     0,
+      45,     0,    46,     0,    47,     0,    48,     0,     0,     0,
+      49,    50,    39,    40,    41,    42,     0,     0,    52,     0,
+       0,    43,    44,     0,     0,     0,    45,     0,    46,     0,
+      47,     0,    48,     0,     0,     0,    49,    50,    39,    40,
+      41,    42,    79,    80,    52,     0,     0,    43,    44,     0,
+       0,     0,    45,     0,    46,     0,    47,     0,    48,     0,
+       0,     0,    49,    50,    39,    40,    41,    42,     0,     0,
+      52,     0,     0,    43,    44,     0,     0,     0,    45,     0,
+      46,     0,    47,     0,    48,     0,     0,     0,    49,    50,
+      39,    40,    41,    42,    83,     0,    52,     0,     0,    43,
+      44,     0,     0,     0,    45,     0,    46,     0,    47,     0,
+      48,     0,     0,     0,    49,    50,    39,    40,    41,    42,
+      86,     0,    52,     0,     0,    43,    44,     0,     0,     0,
+      45,     0,    46,     0,    47,     0,    48,     0,     0,     0,
+      49,    50,    39,    40,    41,    42,    88,     0,    52,     0,
+       0,    43,    44,     0,     0,     0,    45,     0,    46,     0,
+      47,     0,    48,     0,     0,     0,    49,    50,    39,    40,
+      41,    42,    94,     0,    52,     0,     0,    43,    44,     0,
+       0,     0,    45,     0,    46,     0,    47,     0,    48,    41,
+      42,     0,    49,    50,     0,     0,    43,    44,     0,     0,
+      52,    45,     0,    46,     0,    47,     0,    48,     0,     0,
+       0,    49,    50,     4,     5,     6,     0,     8,     9,    52,
+       0,    10,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,    11
 };
 
 static const yytype_int8 yycheck[] =
 {
-       0,     1,    41,     3,     4,     5,     6,     7,     8,    11,
-      41,    11,    41,    41,     9,    10,    -1,    -1,    -1,    -1,
-       8,     9,    10,    11,    -1,    -1,    -1,    -1,    -1,    29,
-      18,    19,    -1,    21,    -1,    23,    24,    25,    26,    -1,
-      -1,    41,    42,    43,    39,    33,    34,    35,    36,    37,
-      38,    39,    40,    41,    42,    43,    44,    -1,    46,     7,
-       8,     9,    10,    -1,    -1,    -1,    -1,    -1,    16,    17,
-      -1,    -1,    -1,    21,    -1,    23,    -1,    25,    -1,    27,
-      -1,    14,    -1,    31,    32,    18,    19,    20,    -1,    22,
-      38,    39,    -1,    41,     7,     8,     9,    10,    -1,    12,
-      33,    34,    -1,    16,    17,    -1,    -1,    -1,    21,    -1,
-      23,    44,    25,    -1,    27,    -1,    -1,    -1,    31,    32,
-       7,     8,     9,    10,    -1,    12,    39,    -1,    -1,    16,
+       8,     9,    10,    11,    38,    41,    11,    41,    41,    41,
+       4,    35,    20,    21,    41,    23,    41,    25,    26,    27,
+      28,    29,    35,    35,    44,     4,     9,    10,    35,    44,
+       4,    39,    40,    41,    42,    43,    44,    45,    46,    47,
+      48,    49,    50,    -1,    52,    -1,     0,     1,    -1,     3,
+       4,     5,     6,     7,     8,    63,    39,    11,    -1,    -1,
+      -1,    14,    -1,    -1,    -1,    18,    19,    20,    -1,    22,
+      -1,    -1,    -1,    -1,    82,    29,    -1,    85,    -1,    -1,
+      33,    34,    35,    -1,    92,    -1,    -1,    41,    42,    43,
+      44,     7,     8,     9,    10,    48,    -1,    -1,    -1,    -1,
+      16,    17,    -1,    -1,    -1,    21,    -1,    23,    -1,    25,
+      -1,    27,    -1,    -1,    -1,    31,    32,    -1,    -1,    -1,
+      -1,    -1,    38,    39,    -1,    41,     7,     8,     9,    10,
+      -1,    12,    -1,    -1,    -1,    16,    17,    -1,    -1,    -1,
+      21,    -1,    23,    -1,    25,    -1,    27,    -1,    -1,    -1,
+      31,    32,     7,     8,     9,    10,    -1,    -1,    39,    -1,
+      -1,    16,    17,    -1,    -1,    -1,    21,    -1,    23,    -1,
+      25,    -1,    27,    -1,    -1,    -1,    31,    32,     7,     8,
+       9,    10,    37,    12,    39,    -1,    -1,    16,    17,    -1,
+      -1,    -1,    21,    -1,    23,    -1,    25,    -1,    27,    -1,
+      -1,    -1,    31,    32,     7,     8,     9,    10,    -1,    -1,
+      39,    -1,    -1,    16,    17,    -1,    -1,    -1,    21,    -1,
+      23,    -1,    25,    -1,    27,    -1,    -1,    -1,    31,    32,
+       7,     8,     9,    10,    37,    -1,    39,    -1,    -1,    16,
       17,    -1,    -1,    -1,    21,    -1,    23,    -1,    25,    -1,
       27,    -1,    -1,    -1,    31,    32,     7,     8,     9,    10,
-      -1,    -1,    39,    -1,    -1,    16,    17,    -1,    -1,    -1,
-      21,    -1,    23,    -1,    25,    -1,    27,     9,    10,    -1,
-      31,    32,    -1,    -1,    16,    17,    -1,    -1,    39,    21,
-      -1,    23,    -1,    25,    -1,    27,    -1,    -1,    -1,    31,
-      32,     3,     4,     5,    -1,     7,     8,    39,    -1,    11,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    29
+      37,    -1,    39,    -1,    -1,    16,    17,    -1,    -1,    -1,
+      21,    -1,    23,    -1,    25,    -1,    27,    -1,    -1,    -1,
+      31,    32,     7,     8,     9,    10,    37,    -1,    39,    -1,
+      -1,    16,    17,    -1,    -1,    -1,    21,    -1,    23,    -1,
+      25,    -1,    27,    -1,    -1,    -1,    31,    32,     7,     8,
+       9,    10,    37,    -1,    39,    -1,    -1,    16,    17,    -1,
+      -1,    -1,    21,    -1,    23,    -1,    25,    -1,    27,     9,
+      10,    -1,    31,    32,    -1,    -1,    16,    17,    -1,    -1,
+      39,    21,    -1,    23,    -1,    25,    -1,    27,    -1,    -1,
+      -1,    31,    32,     3,     4,     5,    -1,     7,     8,    39,
+      -1,    11,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    29
 };
 
 /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
    symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,    47,     0,     1,     3,     4,     5,     6,     7,     8,
-      11,    29,    41,    42,    43,    48,    49,    41,    14,    18,
-      19,    20,    22,    33,    34,    44,    11,    49,    49,    49,
-      49,    41,    41,     7,     8,     9,    10,    16,    17,    21,
-      23,    25,    27,    31,    32,    38,    39,    41,    49,    49,
-      49,    49,    49,    49,    49,    12,    49,    49,    49,    49,
-      49,    49,    49,    49,    49,    49,    49,    49,    41,    49,
-      12
+       0,    51,     0,     1,     3,     4,     5,     6,     7,     8,
+      11,    29,    41,    42,    43,    44,    52,    53,    56,    41,
+      14,    18,    19,    20,    22,    33,    34,    35,    48,    11,
+      56,    56,    56,    56,    41,    41,     4,    38,    41,     7,
+       8,     9,    10,    16,    17,    21,    23,    25,    27,    31,
+      32,    38,    39,    41,    56,    56,    56,    56,    56,    56,
+      56,    56,    12,    35,    41,    56,    56,    56,    56,    56,
+      56,    56,    56,    56,    56,    56,    56,    41,    56,    37,
+      12,    56,    35,    37,    56,    35,    37,    56,    37,    54,
+      44,     4,    35,    56,    37,    55,    44,     4
 };
 
 #define yyerrok		(yyerrstatus = 0)
@@ -1467,225 +1533,401 @@ yyreduce:
   switch (yyn)
     {
         case 5:
-#line 54 "mainBison.y"
-    { printf( BLU "\t%f\n" RESET, (yyvsp[(1) - (3)].val));;}
+#line 70 "mainBison.y"
+    { printf( BLU "\tMatrix/Vector declared\n" RESET);;}
     break;
 
   case 6:
-#line 55 "mainBison.y"
-    { printf( BLU "\tOK\n" RESET );;}
+#line 71 "mainBison.y"
+    { ;}
     break;
 
   case 7:
-#line 56 "mainBison.y"
-    { yyerrok; ;}
+#line 72 "mainBison.y"
+    { ;}
     break;
 
   case 8:
-#line 57 "mainBison.y"
-    { printfHelp(); ;}
+#line 73 "mainBison.y"
+    { printf( BLU "\t%g\n" RESET, (yyvsp[(1) - (2)].val));;}
     break;
 
   case 9:
-#line 58 "mainBison.y"
-    { YYACCEPT; ;}
+#line 74 "mainBison.y"
+    { yyerrok; ;}
     break;
 
   case 10:
-#line 59 "mainBison.y"
-    { YYACCEPT; ;}
+#line 75 "mainBison.y"
+    { printfHelp(); ;}
     break;
 
   case 11:
-#line 62 "mainBison.y"
-    { (yyval.val) = (yyvsp[(1) - (1)].val); ;}
+#line 76 "mainBison.y"
+    { YYACCEPT; ;}
     break;
 
   case 12:
-#line 63 "mainBison.y"
-    {
-                                  variableContent *vc= (variableContent*) (yyvsp[(1) - (1)].pts)->content;
-                                  checkDefined(vc,0);
-                                  (yyval.val) = vc->value;
-                                 ;}
+#line 77 "mainBison.y"
+    { YYACCEPT; ;}
     break;
 
   case 13:
-#line 70 "mainBison.y"
+#line 84 "mainBison.y"
+    {
+                                  variableContent *vc= (variableContent*) (yyvsp[(2) - (8)].pts)->content;
+                                  if(defined(vc,0)){
+                                    yyerror("Matrix already declared");
+                                    YYERROR;
+                                  }
+
+                                  int rows=(int)(yyvsp[(4) - (8)].val);
+                                  int columns=(int)(yyvsp[(7) - (8)].val);
+                                  vc->value.rows=rows;
+                                  vc->value.columns=columns;
+                                  vc->value.defAsMatrix=1;
+                                  vc->value.values = malloc(rows * sizeof(double*));
+                                  for (int i = 0; i < rows; i++) {
+                                        vc->value.values[i] = malloc(columns * sizeof(double));
+                                        for(int j=0;j < columns; j++){
+                                          vc->value.values[i][j]=0;
+                                        }
+                                  }
+                                  vc->defined=1;
+                                ;}
+    break;
+
+  case 14:
+#line 106 "mainBison.y"
+    {
+                                  variableContent *vc= (variableContent*) (yyvsp[(2) - (14)].pts)->content;
+                                  if(defined(vc,0)){
+                                    yyerror("Matrix already declared");
+                                    YYERROR;
+                                  }
+                                  int rows=(int)(yyvsp[(4) - (14)].val);
+                                  int columns=1;
+                                  vc->value.rows=rows;
+                                  vc->value.columns=columns;
+                                  vc->value.defAsMatrix=1;
+                                  vc->value.values = malloc(rows * sizeof(double*));
+                                  for (int i = 0; i < rows; i++) {
+                                        vc->value.values[i] = malloc(columns * sizeof(double));
+                                        for(int j=0;j < 1; j++){
+                                          vc->value.values[i][j]=0;
+                                        }
+                                  }
+                                  vc->defined=1;
+                                ;}
+    break;
+
+  case 15:
+#line 126 "mainBison.y"
+    {
+                                  variableContent *vc= (variableContent*) (yyvsp[(2) - (17)].pts)->content;
+                                  if(defined(vc,0)){
+                                    yyerror("Variable already declared");
+                                    YYERROR;
+                                  }
+                                  vc->value.values[0][0]=0;
+                                  vc->defined=1;
+                                ;}
+    break;
+
+  case 16:
+#line 140 "mainBison.y"
+    { (yyval.val) = (yyvsp[(1) - (1)].val); ;}
+    break;
+
+  case 17:
+#line 141 "mainBison.y"
+    {
+                                  variableContent *vc= (variableContent*) (yyvsp[(1) - (1)].pts)->content;
+                                  if(!defined(vc,0)){
+                                    yyerror("Variable not declared");
+                                    YYERROR;
+                                  }
+                                  if(isMatrix(vc)){
+                                    showWarning("Accesing first element of matrix without [][] notation");
+                                  }
+                                  (yyval.val)=vc->value.values[0][0];
+                                 ;}
+    break;
+
+  case 18:
+#line 154 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
-                                  vc->value=(yyvsp[(3) - (3)].val);
+                                  if(isMatrix(vc)){
+                                    showWarning("Accesing first element of matrix without [][] notation");
+                                  }
+                                  if(!defined(vc,0)){
+                                    showWarning("Implicit declaration with assignment");
+                                  }
+                                  vc->value.values[0][0]=(yyvsp[(3) - (3)].val);
                                   vc->defined=1;
                                   (yyval.val)=(yyvsp[(3) - (3)].val);
                                   ;}
     break;
 
-  case 14:
-#line 76 "mainBison.y"
-    {
-                                  variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
-                                  vc->value/=(yyvsp[(3) - (3)].val);
-                                  checkDefined(vc,1);
-                                  (yyval.val)=vc->value;
-                                  ;}
-    break;
-
-  case 15:
-#line 82 "mainBison.y"
-    {
-                                  variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
-                                  vc->value-=(yyvsp[(3) - (3)].val);
-                                  checkDefined(vc,1);
-                                  (yyval.val)=vc->value;
-                                  ;}
-    break;
-
-  case 16:
-#line 88 "mainBison.y"
-    {
-                                  variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
-                                  vc->value+=(yyvsp[(3) - (3)].val);
-                                  checkDefined(vc,1);
-                                  (yyval.val)=vc->value;
-                                  ;}
-    break;
-
-  case 17:
-#line 94 "mainBison.y"
-    {
-                                  variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
-                                  vc->value*=(yyvsp[(3) - (3)].val);
-                                  checkDefined(vc,1);
-                                  (yyval.val)=vc->value;
-                                  ;}
-    break;
-
-  case 18:
-#line 100 "mainBison.y"
-    {
-                                  variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
-                                  vc->value=fmod(vc->value,(yyvsp[(3) - (3)].val));
-                                  checkDefined(vc,1);
-                                  (yyval.val)=vc->value;
-                                  ;}
-    break;
-
   case 19:
-#line 109 "mainBison.y"
-    { (yyval.val) = ((yyvsp[(1) - (3)].val) || (yyvsp[(3) - (3)].val));}
+#line 166 "mainBison.y"
+    {
+                                  variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
+                                  if(!defined(vc,1)){
+                                    yyerror("Variable not declared");
+                                    YYERROR;
+                                  }
+                                  if(isMatrix(vc)){
+                                    showWarning("Accesing first element of matrix without [][] notation");
+                                  }
+                                  vc->value.values[0][0]/=(yyvsp[(3) - (3)].val);
+                                  (yyval.val)=vc->value.values[0][0];
+                                  ;}
     break;
 
   case 20:
-#line 112 "mainBison.y"
-    { (yyval.val) = ((yyvsp[(1) - (3)].val) && (yyvsp[(3) - (3)].val));}
+#line 178 "mainBison.y"
+    {
+                                  variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
+                                  if(!defined(vc,1)){
+                                    yyerror("Variable not declared");
+                                    YYERROR;
+                                  }
+                                  if(isMatrix(vc)){
+                                    showWarning("Accesing first element of matrix without [][] notation");
+                                  }
+                                  vc->value.values[0][0]-=(yyvsp[(3) - (3)].val);
+                                  (yyval.val)=vc->value.values[0][0];
+                                  ;}
     break;
 
   case 21:
-#line 117 "mainBison.y"
-    { (yyval.val) = ((yyvsp[(1) - (3)].val) == (yyvsp[(3) - (3)].val));}
+#line 190 "mainBison.y"
+    {
+                                  variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
+                                  if(!defined(vc,1)){
+                                    yyerror("Variable not declared");
+                                    YYERROR;
+                                  }
+                                  if(isMatrix(vc)){
+                                    showWarning("Accesing first element of matrix without [][] notation");
+                                  }
+                                  vc->value.values[0][0]+=(yyvsp[(3) - (3)].val);
+                                  (yyval.val)=vc->value.values[0][0];
+                                  ;}
     break;
 
   case 22:
-#line 118 "mainBison.y"
-    { (yyval.val) = ((yyvsp[(1) - (3)].val) != (yyvsp[(3) - (3)].val));}
+#line 202 "mainBison.y"
+    {
+                                  variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
+                                  if(!defined(vc,1)){
+                                    yyerror("Variable not declared");
+                                    YYERROR;
+                                  }
+                                  if(isMatrix(vc)){
+                                    showWarning(YEL "Accesing first element of matrix without [][] notation" RESET);
+                                  }
+                                  vc->value.values[0][0]*=(yyvsp[(3) - (3)].val);
+                                  (yyval.val)=vc->value.values[0][0];
+                                  ;}
     break;
 
   case 23:
-#line 120 "mainBison.y"
-    { (yyval.val) = ((yyvsp[(1) - (3)].val) > (yyvsp[(3) - (3)].val));}
+#line 214 "mainBison.y"
+    {
+                                  variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
+                                  if(!defined(vc,1)){
+                                    yyerror("Variable not declared");
+                                    YYERROR;
+                                  }
+                                  if(isMatrix(vc)){
+                                    showWarning("Accesing first element of matrix without [][] notation");
+                                  }
+                                  vc->value.values[0][0]=fmod(vc->value.values[0][0],(yyvsp[(3) - (3)].val));
+                                  (yyval.val)=vc->value.values[0][0];
+                                  ;}
     break;
 
   case 24:
-#line 121 "mainBison.y"
-    { (yyval.val) = ((yyvsp[(1) - (3)].val) >= (yyvsp[(3) - (3)].val));}
+#line 229 "mainBison.y"
+    { (yyval.val) = ((yyvsp[(1) - (3)].val) || (yyvsp[(3) - (3)].val));}
     break;
 
   case 25:
-#line 123 "mainBison.y"
-    { (yyval.val) = ((yyvsp[(1) - (3)].val) < (yyvsp[(3) - (3)].val));}
+#line 232 "mainBison.y"
+    { (yyval.val) = ((yyvsp[(1) - (3)].val) && (yyvsp[(3) - (3)].val));}
     break;
 
   case 26:
-#line 124 "mainBison.y"
-    { (yyval.val) = ((yyvsp[(1) - (3)].val) <= (yyvsp[(3) - (3)].val));}
+#line 237 "mainBison.y"
+    { (yyval.val) = ((yyvsp[(1) - (3)].val) == (yyvsp[(3) - (3)].val));}
     break;
 
   case 27:
-#line 128 "mainBison.y"
-    { (yyval.val) = (yyvsp[(1) - (3)].val) + (yyvsp[(3) - (3)].val); ;}
+#line 238 "mainBison.y"
+    { (yyval.val) = ((yyvsp[(1) - (3)].val) != (yyvsp[(3) - (3)].val));}
     break;
 
   case 28:
-#line 129 "mainBison.y"
-    { (yyval.val) = (yyvsp[(1) - (3)].val) - (yyvsp[(3) - (3)].val); ;}
+#line 240 "mainBison.y"
+    { (yyval.val) = ((yyvsp[(1) - (3)].val) > (yyvsp[(3) - (3)].val));}
     break;
 
   case 29:
-#line 133 "mainBison.y"
-    { (yyval.val) = (yyvsp[(1) - (3)].val) * (yyvsp[(3) - (3)].val); ;}
+#line 241 "mainBison.y"
+    { (yyval.val) = ((yyvsp[(1) - (3)].val) >= (yyvsp[(3) - (3)].val));}
     break;
 
   case 30:
-#line 134 "mainBison.y"
-    { (yyval.val) = (yyvsp[(1) - (3)].val) / (yyvsp[(3) - (3)].val); ;}
+#line 243 "mainBison.y"
+    { (yyval.val) = ((yyvsp[(1) - (3)].val) < (yyvsp[(3) - (3)].val));}
     break;
 
   case 31:
-#line 135 "mainBison.y"
-    { (yyval.val) = fmod((yyvsp[(1) - (3)].val),(yyvsp[(3) - (3)].val)); ;}
+#line 244 "mainBison.y"
+    { (yyval.val) = ((yyvsp[(1) - (3)].val) <= (yyvsp[(3) - (3)].val));}
     break;
 
   case 32:
-#line 140 "mainBison.y"
-    { (yyval.val) = !((yyvsp[(2) - (2)].val)); ;}
+#line 248 "mainBison.y"
+    { (yyval.val) = (yyvsp[(1) - (3)].val) + (yyvsp[(3) - (3)].val); ;}
     break;
 
   case 33:
-#line 143 "mainBison.y"
-    { (yyval.val) = -(yyvsp[(2) - (2)].val);;}
+#line 249 "mainBison.y"
+    { (yyval.val) = (yyvsp[(1) - (3)].val) - (yyvsp[(3) - (3)].val); ;}
     break;
 
   case 34:
-#line 144 "mainBison.y"
-    { (yyval.val) = (yyvsp[(2) - (2)].val);;}
+#line 253 "mainBison.y"
+    { (yyval.val) = (yyvsp[(1) - (3)].val) * (yyvsp[(3) - (3)].val); ;}
     break;
 
   case 35:
-#line 153 "mainBison.y"
+#line 254 "mainBison.y"
+    { (yyval.val) = (yyvsp[(1) - (3)].val) / (yyvsp[(3) - (3)].val); ;}
+    break;
+
+  case 36:
+#line 255 "mainBison.y"
+    { (yyval.val) = fmod((yyvsp[(1) - (3)].val),(yyvsp[(3) - (3)].val)); ;}
+    break;
+
+  case 37:
+#line 260 "mainBison.y"
+    { (yyval.val) = !((yyvsp[(2) - (2)].val)); ;}
+    break;
+
+  case 38:
+#line 263 "mainBison.y"
+    { (yyval.val) = -(yyvsp[(2) - (2)].val);;}
+    break;
+
+  case 39:
+#line 264 "mainBison.y"
+    { (yyval.val) = (yyvsp[(2) - (2)].val);;}
+    break;
+
+  case 40:
+#line 268 "mainBison.y"
+    {
+                                  variableContent *vc= (variableContent*) (yyvsp[(1) - (7)].pts)->content;
+                                  if(!defined(vc,0)){
+                                    yyerror("Matrix not declared");
+                                    YYERROR;
+                                  }
+                                  if(!isMatrix(vc)){
+                                    yyerror("That element is not a matrix");
+                                    YYERROR;
+                                  }
+                                  if( ((yyvsp[(3) - (7)].val)<0) || ((yyvsp[(6) - (7)].val)<0)){
+                                    yyerror("Negative index not allowed");
+                                    YYERROR;
+                                  }
+                                  if(!isInBounds((yyvsp[(3) - (7)].val),(yyvsp[(6) - (7)].val),vc)){
+                                    yyerror("Index outside the matrix");
+                                    YYERROR;
+                                  }
+                                  double aux= vc->value.values[(int)(yyvsp[(3) - (7)].val)][(int)(yyvsp[(6) - (7)].val)];
+                                  (yyval.val)=aux;
+                                  ;}
+    break;
+
+  case 41:
+#line 290 "mainBison.y"
+    {
+                                  variableContent *vc= (variableContent*) (yyvsp[(1) - (4)].pts)->content;
+                                  if(!defined(vc,0)){
+                                    yyerror("Vector not declared");
+                                    YYERROR;
+                                  }
+                                  if(!isMatrix(vc)){
+                                    yyerror("That element is not a vector");
+                                    YYERROR;
+                                  }
+                                  if((yyvsp[(3) - (4)].val)<0){
+                                    yyerror("Negative index not allowed");
+                                    YYERROR;
+                                  }
+                                  if(!isInBounds((yyvsp[(3) - (4)].val),0,vc)){
+                                    yyerror("Index outside the matrix");
+                                    YYERROR;
+                                  }
+                                  double aux= vc->value.values[(int)(yyvsp[(3) - (4)].val)][0];
+                                  (yyval.val)=aux;
+                                  ;}
+    break;
+
+  case 42:
+#line 315 "mainBison.y"
     {
                                   functionContent *fc= (functionContent*) (yyvsp[(1) - (4)].pts)->content;
                                   (yyval.val) = (*(fc->funcPointer))((yyvsp[(3) - (4)].val));
                                   ;}
     break;
 
-  case 36:
-#line 161 "mainBison.y"
+  case 43:
+#line 323 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (2)].pts)->content;
-                                  vc->value++;
-                                  checkDefined(vc,1);
-                                  (yyval.val)=vc->value;
+                                  if(!defined(vc,1)){
+                                    yyerror("Variable not declared");
+                                    YYERROR;
+                                  }
+                                  if(isMatrix(vc)){
+                                    showWarning("Accesing first element of matrix without [][] notation");
+                                  }
+                                  vc->value.values[0][0]++;
+                                  (yyval.val)=vc->value.values[0][0];
                                 ;}
     break;
 
-  case 37:
-#line 167 "mainBison.y"
+  case 44:
+#line 335 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (2)].pts)->content;
-                                  vc->value--;
-                                  checkDefined(vc,1);
-                                  (yyval.val)=vc->value;
+                                  if(!defined(vc,1)){
+                                    yyerror("Variable not declared");
+                                    YYERROR;
+                                  }
+                                  if(isMatrix(vc)){
+                                    showWarning("Accesing first element of matrix without [][] notation");
+                                  }
+                                  vc->value.values[0][0]--;
+                                  (yyval.val)=vc->value.values[0][0];
                                 ;}
     break;
 
-  case 38:
-#line 176 "mainBison.y"
+  case 45:
+#line 350 "mainBison.y"
     { (yyval.val) = (yyvsp[(2) - (3)].val); ;}
     break;
 
 
 /* Line 1267 of yacc.c.  */
-#line 1689 "mainBison.tab.c"
+#line 1931 "mainBison.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -1899,21 +2141,53 @@ yyreturn:
 }
 
 
-#line 181 "mainBison.y"
+#line 355 "mainBison.y"
 
 
 void yyerror (char *s){
         manageNonFatalError(ERR_BISON, s);
 }
-void checkDefined(variableContent *vc,unsigned short assign){
-  if(!vc->defined){
+
+void showWarning(char *s){
+        manageWarning(WAR_BISON,s);
+}
+
+
+short defined(variableContent *vc,unsigned short assign){
+
+return vc->defined;
+
+  //if(!vc->defined){
     //We could not allow the operation by uncommenting the next line:
-    //YYERROR;
-    if(assign){
+    //printf( RED "Variable %s not defined by user.\n" RESET,vc->name);
+    /*if(assign){
     printf( YEL "Variable %s not defined by user, value of 0.0f assumed and obtained value assigned.\n" RESET,vc->name);
     }else{
     printf( YEL "Variable %s not defined by user, value of 0.0f assumed.\n" RESET,vc->name);
-    }
-  }
+    }*/
+  //  return 0;
+//  }
+//return 1;*/
+
+
+}
+
+short isMatrix(variableContent *vc){
+  /*if(vc->value.rows==1 && vc->value.columns==1){
+    return 0;
+  }else{
+    return 1;
+  }*/
+  return vc->value.defAsMatrix;
+  //return ((vc->value.rows>1) || (vc->value.columns>1));
+}
+
+short isInBounds(int x, int y,variableContent *vc){
+  /*if(vc->value.rows>x && vc->value.columns>y){
+    return 1;
+  }else{
+    return 0;
+  }*/
+  return ((vc->value.rows>x) && (vc->value.columns>y));
 }
 

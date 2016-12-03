@@ -44,6 +44,9 @@ void printMessageFor(int code) {
         case ERR_BISON:
             printf("Bison detected an error");
             break;
+        case WAR_BISON:
+            printf("Bison sent a warning");
+            break;
         default:
             printf("No message for that code.");
             break;
@@ -58,7 +61,7 @@ void printMessageFor(int code) {
  * */
 void manageFatalErrorWithLine(int code, char *message, int line, int position) {
 
-    printf(RED "ERROR CODE [%d]: ", code);              //Print the error code
+    printf(RED "\nERROR CODE [%d]: ", code);              //Print the error code
     printMessageFor(code);                              //Print the message associated
     printf("\n\t%s\n\thappened at line %d, in position %d\n\n"RESET, message, line, position);   //And the line and position that had the error
 
@@ -86,7 +89,7 @@ void manageFatalErrorWithLine(int code, char *message, int line, int position) {
  * */
 void manageFatalError(int code, char *message) {
 
-    printf(RED"ERROR CODE [%d]: ", code);
+    printf(RED"\nERROR CODE [%d]: ", code);
     printMessageFor(code);
     printf("\n\t%s\n\n"RESET, message);
 
@@ -108,7 +111,7 @@ void manageFatalError(int code, char *message) {
  * */
 void manageNonFatalErrorWithLine(int code, char *message, int line, int position) {
 
-    printf(RED"ERROR CODE [%d]: ", code);
+    printf(RED"\nERROR CODE [%d]: ", code);
     printMessageFor(code);
     printf("\n\t%s\n\thappened at line %d, in position %d\n\n"RESET, message, line, position);
 
@@ -123,7 +126,23 @@ void manageNonFatalErrorWithLine(int code, char *message, int line, int position
  * */
 void manageNonFatalError(int code, char *message) {
 
-    printf(RED"ERROR CODE [%d]: ", code);
+    printf(RED"\nERROR CODE [%d]: ", code);
+    printMessageFor(code);
+    printf("\n\t%s\n\n"RESET, message);
+
+    return;
+
+}
+
+
+/**
+ * We show a warning without showing the line and position given to us.
+ *
+ * This allows the program to go on.
+ * */
+void manageWarning(int code, char *message) {
+
+    printf(YEL"\nWARNING CODE [%d]: ", code);
     printMessageFor(code);
     printf("\n\t%s\n\n"RESET, message);
 
