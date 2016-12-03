@@ -361,8 +361,8 @@ static void yy_fatal_error (yyconst char msg[]  );
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
 
-#define YY_NUM_RULES 46
-#define YY_END_OF_BUFFER 47
+#define YY_NUM_RULES 47
+#define YY_END_OF_BUFFER 48
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -372,13 +372,13 @@ struct yy_trans_info
 	};
 static yyconst flex_int16_t yy_accept[101] =
     {   0,
-        0,    0,   47,   46,   44,   45,   29,   41,   46,   31,
-       32,   39,   22,   19,   46,   15,   11,   11,   36,   35,
-       25,   37,   27,   10,   10,   10,   33,   34,   10,   10,
-       10,   10,   10,   10,   10,   10,   46,   43,   30,   42,
-       17,   40,   24,   23,   21,   20,   13,   16,   14,   11,
-        0,    0,   26,   38,   28,   10,   10,   10,   10,   10,
-       10,   10,   10,   10,   10,   10,   18,    0,   13,    0,
+        0,    0,   48,   47,   45,   46,   30,   42,   47,   32,
+       33,   40,   23,   20,   15,   16,   11,   11,   37,   36,
+       26,   38,   28,   10,   10,   10,   34,   35,   10,   10,
+       10,   10,   10,   10,   10,   10,   47,   44,   31,   43,
+       18,   41,   25,   24,   22,   21,   13,   17,   14,   11,
+        0,    0,   27,   39,   29,   10,   10,   10,   10,   10,
+       10,   10,   10,   10,   10,   10,   19,    0,   13,    0,
        14,   12,   10,   10,   10,    6,   10,   10,   10,   10,
        10,    5,    0,   13,    0,   12,   10,    1,   10,   10,
         8,   10,    7,    9,    0,   13,    2,    4,    3,    0
@@ -891,11 +891,8 @@ YY_RULE_SETUP
         ((variableContent*)(sd->content))->value.columns=1;
 
 
-        ((variableContent*)(sd->content))->value.values = malloc(1 * sizeof(double*));
-        for (int i = 0; i < 1; i++) {
-              ((variableContent*)(sd->content))->value.values[i] = malloc(1 * sizeof(double));
-        }
-
+        ((variableContent*)(sd->content))->value.values = malloc(sizeof(double*));
+        ((variableContent*)(sd->content))->value.values[0] = malloc(sizeof(double));
         ((variableContent*)(sd->content))->value.defAsMatrix=0;
 
 
@@ -921,7 +918,7 @@ YY_RULE_SETUP
 /*INTEGER LITERALS*/
 case 11:
 YY_RULE_SETUP
-#line 110 "mainFlex.l"
+#line 107 "mainFlex.l"
 {
                   yylval.val = atof(yytext);
                   return(FLOAT_VALUE);
@@ -930,7 +927,7 @@ YY_RULE_SETUP
 /*HEXADECIMAL LITERALS*/
 case 12:
 YY_RULE_SETUP
-#line 117 "mainFlex.l"
+#line 114 "mainFlex.l"
 {
                   yylval.val = atof(yytext);
                   return(FLOAT_VALUE);
@@ -938,10 +935,10 @@ YY_RULE_SETUP
 	YY_BREAK
 /*FLOATING LITERALS*/
 case 13:
-#line 126 "mainFlex.l"
+#line 123 "mainFlex.l"
 case 14:
 YY_RULE_SETUP
-#line 126 "mainFlex.l"
+#line 123 "mainFlex.l"
 {
                   yylval.val = atof(yytext);
 									return(FLOAT_VALUE);
@@ -950,172 +947,177 @@ YY_RULE_SETUP
 /*OPERATORS*/
 case 15:
 YY_RULE_SETUP
-#line 134 "mainFlex.l"
-{ return('/');}
+#line 130 "mainFlex.l"
+{ return('.');}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 135 "mainFlex.l"
-{ return(OPE_SLASH_EQ);}
+#line 131 "mainFlex.l"
+{ return('/');}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 136 "mainFlex.l"
-{ return(OPE_AND_AND);}
+#line 132 "mainFlex.l"
+{ return(OPE_SLASH_EQ);}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 137 "mainFlex.l"
-{ return(OPE_VERT_VERT);}
+#line 133 "mainFlex.l"
+{ return(OPE_AND_AND);}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 138 "mainFlex.l"
-{ return('-');}
+#line 134 "mainFlex.l"
+{ return(OPE_VERT_VERT);}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 139 "mainFlex.l"
-{ return(OPE_MINUS_EQ);}
+#line 135 "mainFlex.l"
+{ return('-');}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 140 "mainFlex.l"
-{ return(OPE_MINUS_MINUS);}
+#line 136 "mainFlex.l"
+{ return(OPE_MINUS_EQ);}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 141 "mainFlex.l"
-{ return('+');}
+#line 137 "mainFlex.l"
+{ return(OPE_MINUS_MINUS);}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 142 "mainFlex.l"
-{ return(OPE_PLUS_EQ);}
+#line 138 "mainFlex.l"
+{ return('+');}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 143 "mainFlex.l"
-{ return(OPE_PLUS_PLUS);}
+#line 139 "mainFlex.l"
+{ return(OPE_PLUS_EQ);}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 144 "mainFlex.l"
-{ return('<');}
+#line 140 "mainFlex.l"
+{ return(OPE_PLUS_PLUS);}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 145 "mainFlex.l"
-{ return(OPE_LESSTHAN_EQ);}
+#line 141 "mainFlex.l"
+{ return('<');}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 146 "mainFlex.l"
-{ return('>');}
+#line 142 "mainFlex.l"
+{ return(OPE_LESSTHAN_EQ);}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 147 "mainFlex.l"
-{ return(OPE_MORETHAN_EQ);}
+#line 143 "mainFlex.l"
+{ return('>');}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 148 "mainFlex.l"
-{ return('!');}
+#line 144 "mainFlex.l"
+{ return(OPE_MORETHAN_EQ);}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 149 "mainFlex.l"
-{ return(OPE_EXCL_EQ);}
+#line 145 "mainFlex.l"
+{ return('!');}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 150 "mainFlex.l"
-{ return('(');}
+#line 146 "mainFlex.l"
+{ return(OPE_EXCL_EQ);}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 151 "mainFlex.l"
-{ return(')');}
+#line 147 "mainFlex.l"
+{ return('(');}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 152 "mainFlex.l"
-{ return('[');}
+#line 148 "mainFlex.l"
+{ return(')');}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 153 "mainFlex.l"
-{ return(']');}
+#line 149 "mainFlex.l"
+{ return('[');}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 154 "mainFlex.l"
-{ return(';');}
+#line 150 "mainFlex.l"
+{ return(']');}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 155 "mainFlex.l"
-{ return(':');}
+#line 151 "mainFlex.l"
+{ return(';');}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 156 "mainFlex.l"
-{ return('=');}
+#line 152 "mainFlex.l"
+{ return(':');}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 157 "mainFlex.l"
-{ return(OPE_EQ_EQ);}
+#line 153 "mainFlex.l"
+{ return('=');}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 158 "mainFlex.l"
-{ return('*');}
+#line 154 "mainFlex.l"
+{ return(OPE_EQ_EQ);}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 159 "mainFlex.l"
-{ return(OPE_TIMES_EQ);}
+#line 155 "mainFlex.l"
+{ return('*');}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 160 "mainFlex.l"
-{ return('%');}
+#line 156 "mainFlex.l"
+{ return(OPE_TIMES_EQ);}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 161 "mainFlex.l"
-{ return(OPE_PERC_EQ);}
+#line 157 "mainFlex.l"
+{ return('%');}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 162 "mainFlex.l"
+#line 158 "mainFlex.l"
+{ return(OPE_PERC_EQ);}
+	YY_BREAK
+case 44:
+YY_RULE_SETUP
+#line 159 "mainFlex.l"
 { return('~');}
 	YY_BREAK
 /*SPACES*/
-case 44:
+case 45:
 YY_RULE_SETUP
-#line 166 "mainFlex.l"
+#line 163 "mainFlex.l"
 
 	YY_BREAK
-case 45:
-/* rule 45 can match eol */
+case 46:
+/* rule 46 can match eol */
 YY_RULE_SETUP
-#line 168 "mainFlex.l"
+#line 165 "mainFlex.l"
 {return NEWLINE;}
 	YY_BREAK
 /*END OF FILE*/
 case YY_STATE_EOF(INITIAL):
-#line 172 "mainFlex.l"
+#line 169 "mainFlex.l"
 {return(END_OF_FILE);}
 	YY_BREAK
-case 46:
+case 47:
 YY_RULE_SETUP
-#line 173 "mainFlex.l"
+#line 170 "mainFlex.l"
 ECHO;
 	YY_BREAK
-#line 1119 "lex.yy.c"
+#line 1121 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2110,4 +2112,4 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 173 "mainFlex.l"
+#line 170 "mainFlex.l"

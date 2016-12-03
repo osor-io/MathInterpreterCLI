@@ -78,11 +78,8 @@ SciNo [Ee][+-]?{Digit}+
         ((variableContent*)(sd->content))->value.columns=1;
 
 
-        ((variableContent*)(sd->content))->value.values = malloc(1 * sizeof(double*));
-        for (int i = 0; i < 1; i++) {
-              ((variableContent*)(sd->content))->value.values[i] = malloc(1 * sizeof(double));
-        }
-
+        ((variableContent*)(sd->content))->value.values = malloc(sizeof(double*));
+        ((variableContent*)(sd->content))->value.values[0] = malloc(sizeof(double));
         ((variableContent*)(sd->content))->value.defAsMatrix=0;
 
 
@@ -130,7 +127,7 @@ SciNo [Ee][+-]?{Digit}+
 
                  /*OPERATORS*/
 
-
+"."     { return('.');}
 "/"		  { return('/');}
 "/="	  { return(OPE_SLASH_EQ);}
 "&&"		{ return(OPE_AND_AND);}

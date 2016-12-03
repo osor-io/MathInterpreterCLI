@@ -51,24 +51,19 @@
      OPE_PLUS_EQ = 267,
      OPE_PLUS_PLUS = 268,
      OPE_LESSTHAN_EQ = 269,
-     OPE_LESSTHAN_LESSTHAN = 270,
-     OPE_LESSTHAN_LESSTHAN_EQ = 271,
-     OPE_MORETHAN_EQ = 272,
-     OPE_MORETHAN_MORETHAN_EQ = 273,
-     OPE_MORETHAN_MORETHAN = 274,
-     OPE_EXCL_EQ = 275,
-     OPE_EQ_EQ = 276,
-     OPE_TIMES_EQ = 277,
-     OPE_PERC_EQ = 278,
-     OPE_HAT_EQ = 279,
-     NEWLINE = 280,
-     QUIT = 281,
-     HELP = 282,
-     DECLARE = 283,
-     EXISTS_VARIABLE = 284,
-     CLEAR_VARIABLES = 285,
-     LIST_VARIABLES = 286,
-     NEGATE = 287
+     OPE_MORETHAN_EQ = 270,
+     OPE_EXCL_EQ = 271,
+     OPE_EQ_EQ = 272,
+     OPE_TIMES_EQ = 273,
+     OPE_PERC_EQ = 274,
+     NEWLINE = 275,
+     QUIT = 276,
+     HELP = 277,
+     DECLARE = 278,
+     EXISTS_VARIABLE = 279,
+     CLEAR_VARIABLES = 280,
+     LIST_VARIABLES = 281,
+     NEGATE = 282
    };
 #endif
 /* Tokens.  */
@@ -84,38 +79,33 @@
 #define OPE_PLUS_EQ 267
 #define OPE_PLUS_PLUS 268
 #define OPE_LESSTHAN_EQ 269
-#define OPE_LESSTHAN_LESSTHAN 270
-#define OPE_LESSTHAN_LESSTHAN_EQ 271
-#define OPE_MORETHAN_EQ 272
-#define OPE_MORETHAN_MORETHAN_EQ 273
-#define OPE_MORETHAN_MORETHAN 274
-#define OPE_EXCL_EQ 275
-#define OPE_EQ_EQ 276
-#define OPE_TIMES_EQ 277
-#define OPE_PERC_EQ 278
-#define OPE_HAT_EQ 279
-#define NEWLINE 280
-#define QUIT 281
-#define HELP 282
-#define DECLARE 283
-#define EXISTS_VARIABLE 284
-#define CLEAR_VARIABLES 285
-#define LIST_VARIABLES 286
-#define NEGATE 287
+#define OPE_MORETHAN_EQ 270
+#define OPE_EXCL_EQ 271
+#define OPE_EQ_EQ 272
+#define OPE_TIMES_EQ 273
+#define OPE_PERC_EQ 274
+#define NEWLINE 275
+#define QUIT 276
+#define HELP 277
+#define DECLARE 278
+#define EXISTS_VARIABLE 279
+#define CLEAR_VARIABLES 280
+#define LIST_VARIABLES 281
+#define NEGATE 282
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 34 "mainBison.y"
+#line 41 "mainBison.y"
 {
         variableValue matrixVal;
         double val;
         symbolData *pts;
 }
 /* Line 1529 of yacc.c.  */
-#line 119 "mainBison.tab.h"
+#line 109 "mainBison.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

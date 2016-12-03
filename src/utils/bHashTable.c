@@ -4,6 +4,9 @@
 #include "bHashTable.h"
 #include "../utils/colours.h"
 
+//ADHOC: This is unique to this project, could be deleted if needed.
+#include "../symbolTable/symbolTable.h"
+
 //---------------------HASH FUNCTION-------------------------
 #define FNV1_32_INIT ((u_int32_t)0x811c9dc5)
 
@@ -88,16 +91,29 @@ int deleteHastTable(hashTable **table) {
         if ((**table)[i] != NULL) {                     //If the element is not null
             elementToDelete = (**table)[i];             //We need to delete it
             currentElement = elementToDelete->next;     //And we save a reference to the next one in the list to delete
-            if (elementToDelete->data != NULL)
+            if (elementToDelete->data != NULL){
+
+                //ADHOC:
+                free(((variableContent*)(elementToDelete->data))->name);
+                free(((variableContent*)(elementToDelete->data))->value.values);
+
                 free(elementToDelete->data);            //We have chosen to delete the elements data when we delete the element itself if it's not set to NULL
+            }
             free(elementToDelete->key);
             free(elementToDelete);
             while (currentElement !=
                    NULL) {                              //We iterate through all the elements in the list for that position to delete them all
                 elementToDelete = currentElement;
                 currentElement = elementToDelete->next;
-                if (elementToDelete->data != NULL)
-                    free(elementToDelete->data);
+                if (elementToDelete->data != NULL){
+
+                    //ADHOC:
+                    free(((variableContent*)(elementToDelete->data))->name);
+                    free(((variableContent*)(elementToDelete->data))->value.values);
+
+
+                    free(elementToDelete->data);            //We have chosen to delete the elements data when we delete the element itself if it's not set to NULL
+                }
                 free(elementToDelete->key);
                 free(elementToDelete);
             }

@@ -18,11 +18,18 @@ void yyerror(char* s);
 void showWarning(char *s);
 short defined(variableContent *vc,unsigned short assign);
 short isMatrix(variableContent *vc);
+short isVector(variableContent *vc);
 short isInBounds(int x, int y,variableContent *vc);
+short isSingleNumber(variableValue vc);
+short sameSize(variableValue vc1, variableValue vc2);
 
-void copyMatrix (void * destmat, variableContent *vc) {
-  memcpy(destmat,vc->value.values, vc->value.rows*vc->value.columns*sizeof(double));
-}
+void defOneNumberMatrix(variableValue *vv, double number);
+void copyMatrix (variableValue *dest, variableContent *vc);
+void copyExpression (variableValue *dest, variableValue *src);
+void freeMatrix(variableValue *vv);
+void printMatrix(variableValue vv);
+
+
 
 
 %}
@@ -43,18 +50,25 @@ void copyMatrix (void * destmat, variableContent *vc) {
 %token<val> FLOAT_VALUE
 %token<pts> VARIABLE ONE_OPERATOR_FUNCTION
 %token END_OF_FILE
-%token '+' '-' '*' '/' '(' ')' OPE_SLASH_EQ '&'  OPE_AND_AND '|' OPE_VERT_VERT OPE_MINUS_EQ OPE_MINUS_MINUS OPE_PLUS_EQ OPE_PLUS_PLUS '<' OPE_LESSTHAN_EQ OPE_LESSTHAN_LESSTHAN OPE_LESSTHAN_LESSTHAN_EQ '>' OPE_MORETHAN_EQ OPE_MORETHAN_MORETHAN_EQ OPE_MORETHAN_MORETHAN '!' OPE_EXCL_EQ OPE_EQ_EQ OPE_TIMES_EQ OPE_PERC_EQ OPE_HAT_EQ '[' ']' ';' '%' '~'
+%token '+' '-' '*' '/' '(' ')' OPE_SLASH_EQ   OPE_AND_AND OPE_VERT_VERT OPE_MINUS_EQ OPE_MINUS_MINUS OPE_PLUS_EQ OPE_PLUS_PLUS '<' OPE_LESSTHAN_EQ   '>' OPE_MORETHAN_EQ   '!' OPE_EXCL_EQ OPE_EQ_EQ OPE_TIMES_EQ OPE_PERC_EQ  '[' ']' ';' '%'
 %token NEWLINE QUIT HELP DECLARE EXISTS_VARIABLE CLEAR_VARIABLES LIST_VARIABLES
 
 
-%right '=' OPE_SLASH_EQ OPE_MINUS_EQ OPE_PLUS_EQ OPE_TIMES_EQ  OPE_PERC_EQ '!' '~'
+%right OPE_PLUS_EQ OPE_MINUS_EQ
+%right '=' OPE_SLASH_EQ  OPE_TIMES_EQ  OPE_PERC_EQ
+%left OPE_VERT_VERT
+%left OPE_AND_AND
+%left OPE_EXCL_EQ OPE_EQ_EQ
+%left '<' '>' OPE_LESSTHAN_EQ OPE_MORETHAN_EQ
 %left '+' '-'
-%left OPE_AND_AND OPE_VERT_VERT OPE_MINUS_MINUS OPE_PLUS_PLUS '<' '>' OPE_LESSTHAN_EQ OPE_LESSTHAN_LESSTHAN OPE_MORETHAN_EQ OPE_MORETHAN_MORETHAN OPE_EXCL_EQ OPE_EQ_EQ
 %left '*' '/' '%'
+%right '!'
+%left OPE_MINUS_MINUS OPE_PLUS_PLUS '[' ']' '(' ')'
+
 %left NEGATE
 
  /*%type<matrixVal> MATRIXEXPRESSION*/
-%type<val> EXPRESSION
+%type<matrixVal> EXPRESSION
 
 %start calculation
 
@@ -67,10 +81,13 @@ calculation:
 ;
 
 line: NEWLINE
-    | declaration NEWLINE         { printf( BLU "\tMatrix/Vector declared\n" RESET);}
+    | declaration NEWLINE         { printf( BLU "\tSuccesfull declaration\n" RESET);}
     | declaration ';' NEWLINE     { }
     | EXPRESSION ';' NEWLINE      { }
-    | EXPRESSION NEWLINE          { printf( BLU "\t%g\n" RESET, $1);}
+    | EXPRESSION NEWLINE          { printf(BLU);
+                                    printMatrix($1);
+                                    printf(RESET);
+                                    }
     | error NEWLINE               { yyerrok; }
     | HELP NEWLINE                { printfHelp(); }
     | QUIT NEWLINE                { YYACCEPT; }
@@ -88,8 +105,22 @@ declaration: DECLARE VARIABLE '[' EXPRESSION ']' '[' EXPRESSION ']' {
                                     YYERROR;
                                   }
 
-                                  int rows=(int)$4;
-                                  int columns=(int)$7;
+                                  if(!isSingleNumber($4)){
+                                    yyerror("Row number is a matrix");
+                                    YYERROR;
+                                  }
+                                  if(!isSingleNumber($7)){
+                                    yyerror("Column number is a matrix");
+                                    YYERROR;
+                                  }
+
+
+                                  free(vc->value.values[0]);
+                                  free(vc->value.values);
+
+                                  int rows=(int)$4.values[0][0];
+                                  int columns=(int)$7.values[0][0];
+
                                   vc->value.rows=rows;
                                   vc->value.columns=columns;
                                   vc->value.defAsMatrix=1;
@@ -101,15 +132,25 @@ declaration: DECLARE VARIABLE '[' EXPRESSION ']' '[' EXPRESSION ']' {
                                         }
                                   }
                                   vc->defined=1;
+                                  freeMatrix(&$4);
+                                  freeMatrix(&$7);
                                 }
 
-DECLARE VARIABLE '[' EXPRESSION ']'{
+ | DECLARE VARIABLE '[' EXPRESSION ']'{
                                   variableContent *vc= (variableContent*) $2->content;
                                   if(defined(vc,0)){
                                     yyerror("Matrix already declared");
                                     YYERROR;
                                   }
-                                  int rows=(int)$4;
+                                  if(!isSingleNumber($4)){
+                                    yyerror("Vector size is a matrix");
+                                    YYERROR;
+                                  }
+
+                                  free(vc->value.values[0]);
+                                  free(vc->value.values);
+
+                                  int rows=(int)$4.values[0][0];
                                   int columns=1;
                                   vc->value.rows=rows;
                                   vc->value.columns=columns;
@@ -122,8 +163,10 @@ DECLARE VARIABLE '[' EXPRESSION ']'{
                                         }
                                   }
                                   vc->defined=1;
+                                  freeMatrix(&$4);
+
                                 }
-DECLARE VARIABLE   {
+ | DECLARE VARIABLE   {
                                   variableContent *vc= (variableContent*) $2->content;
                                   if(defined(vc,0)){
                                     yyerror("Variable already declared");
@@ -137,43 +180,114 @@ DECLARE VARIABLE   {
         /*---------EXPRESSIONS---------*/
         /*-----------------------------*/
 
-EXPRESSION: FLOAT_VALUE          { $$ = $1; }
+EXPRESSION: FLOAT_VALUE          {
+                                  defOneNumberMatrix(&$$,$1);
+
+                                }
     | VARIABLE                   {
                                   variableContent *vc= (variableContent*) $1->content;
                                   if(!defined(vc,0)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
-                                  if(isMatrix(vc)){
-                                    showWarning("Accesing first element of matrix without [][] notation");
-                                  }
-                                  $$=vc->value.values[0][0];
+                                  copyMatrix(&$$,vc);
+                                  //printMatrix($$);
                                  }
 
     /*-----------BEG OF ASSIGNING OPERATORS-----------*/
     | VARIABLE '=' EXPRESSION    {
                                   variableContent *vc= (variableContent*) $1->content;
-                                  if(isMatrix(vc)){
-                                    showWarning("Accesing first element of matrix without [][] notation");
-                                  }
                                   if(!defined(vc,0)){
                                     showWarning("Implicit declaration with assignment");
                                   }
-                                  vc->value.values[0][0]=$3;
-                                  vc->defined=1;
-                                  $$=$3;
+                                  if(!sameSize(vc->value,$3)){
+                                    yyerror("Variable is not the same size (rows and columns) as the expresion.");
+                                    YYERROR;
                                   }
-    | VARIABLE OPE_SLASH_EQ EXPRESSION    {
+                                  freeMatrix(&vc->value);
+                                  copyExpression(&(vc->value),&($3));
+                                  vc->defined=1;
+                                  copyExpression(&$$,&($3));
+                                  freeMatrix(&$3);
+                                  }
+    | VARIABLE '[' EXPRESSION ']' '[' EXPRESSION ']' '=' EXPRESSION {
+                                  variableContent *vc= (variableContent*) $1->content;
+                                  if(!defined(vc,0)){
+                                    yyerror("Matrix not declared");
+                                    YYERROR;
+                                  }
+                                  if(!isMatrix(vc)){
+                                    yyerror("That element is not a matrix");
+                                    YYERROR;
+                                  }
+                                  if(!isSingleNumber($3)){
+                                    yyerror("First expression cannot be a matrix");
+                                    YYERROR;
+                                  }
+                                  if(!isSingleNumber($6)){
+                                    yyerror("Second expression cannot be a matrix");
+                                    YYERROR;
+                                  }
+                                  if(!isSingleNumber($9)){
+                                    yyerror("Number assigned expression cannot be a matrix");
+                                    YYERROR;
+                                  }
+                                  if(!isInBounds($3.values[0][0],$6.values[0][0],vc)){
+                                    yyerror("Index outside the matrix");
+                                    YYERROR;
+                                  }
+                                  vc->value.values[(int)$3.values[0][0]][(int)$6.values[0][0]]=$9.values[0][0];
+                                  double aux= vc->value.values[(int)$3.values[0][0]][(int)$6.values[0][0]];
+                                  defOneNumberMatrix(&$$,aux);
+                                  }
+
+    | VARIABLE '[' EXPRESSION ']' '=' EXPRESSION{
+                                  variableContent *vc= (variableContent*) $1->content;
+                                  if(!defined(vc,0)){
+                                    yyerror("Vector not declared");
+                                    YYERROR;
+                                  }
+                                  if(!isVector(vc)){
+                                    yyerror("That element is not a vector");
+                                    YYERROR;
+                                  }
+                                  if(!isSingleNumber($3)){
+                                    yyerror("First expression cannot be a matrix");
+                                    YYERROR;
+                                  }
+                                  if(!isInBounds($3.values[0][0],0,vc)){
+                                    yyerror("Index outside the matrix");
+                                    YYERROR;
+                                  }
+                                  double aux= vc->value.values[(int)$3.values[0][0]][0];
+                                  defOneNumberMatrix(&$$,aux);
+                                  }
+    | VARIABLE  OPE_SLASH_EQ EXPRESSION    {
                                   variableContent *vc= (variableContent*) $1->content;
                                   if(!defined(vc,1)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
-                                  if(isMatrix(vc)){
-                                    showWarning("Accesing first element of matrix without [][] notation");
+                                  if(!isSingleNumber(vc->value)){
+                                    showWarning("Doing operation to all elements in the matrix");
                                   }
-                                  vc->value.values[0][0]/=$3;
-                                  $$=vc->value.values[0][0];
+                                  if(!isSingleNumber($3)){
+                                    yyerror("Expression cannot be a matrix");
+                                    YYERROR;
+                                  }
+                                  if($3.values[0][0]==0){
+                                    yyerror("You cannot divide by zero");
+                                    YYERROR;
+                                  }
+                                  int i,j;
+                                  for (i=0;i<vc->value.rows;i++){
+                                        for (j=0;j<vc->value.columns;j++)
+                                        {
+                                        vc->value.values[i][j] /= $3.values[0][0];
+                                        }
+                                  }
+                                  copyMatrix(&$$,vc);
+                                  freeMatrix(&$3);
                                   }
     | VARIABLE OPE_MINUS_EQ EXPRESSION    {
                                   variableContent *vc= (variableContent*) $1->content;
@@ -181,11 +295,31 @@ EXPRESSION: FLOAT_VALUE          { $$ = $1; }
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
-                                  if(isMatrix(vc)){
-                                    showWarning("Accesing first element of matrix without [][] notation");
+                                  if(isSingleNumber($3)){
+                                        int i,j;
+                                        for (i=0;i<vc->value.rows;i++){
+                                              for (j=0;j<vc->value.columns;j++)
+                                              {
+                                              vc->value.values[i][j] -= $3.values[0][0];
+                                              }
+                                        }
+                                        copyMatrix(&$$,vc);
+                                        freeMatrix(&$3);
+                                  }else{
+                                        if(!sameSize(vc->value,$3)){
+                                          yyerror("Expresion does not match required size (rows and columns)");
+                                          YYERROR;
+                                        }
+                                        int i,j;
+                                        for (i=0;i<vc->value.rows;i++){
+                                              for (j=0;j<vc->value.columns;j++)
+                                              {
+                                              vc->value.values[i][j] -= $3.values[i][j];
+                                              }
+                                        }
+                                        copyMatrix(&$$,vc);
+                                        freeMatrix(&$3);
                                   }
-                                  vc->value.values[0][0]-=$3;
-                                  $$=vc->value.values[0][0];
                                   }
     | VARIABLE OPE_PLUS_EQ EXPRESSION    {
                                   variableContent *vc= (variableContent*) $1->content;
@@ -193,11 +327,32 @@ EXPRESSION: FLOAT_VALUE          { $$ = $1; }
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
-                                  if(isMatrix(vc)){
-                                    showWarning("Accesing first element of matrix without [][] notation");
+
+                                  if(isSingleNumber($3)){
+                                        int i,j;
+                                        for (i=0;i<vc->value.rows;i++){
+                                              for (j=0;j<vc->value.columns;j++)
+                                              {
+                                              vc->value.values[i][j] += $3.values[0][0];
+                                              }
+                                        }
+                                        copyMatrix(&$$,vc);
+                                        freeMatrix(&$3);
+                                  }else{
+                                        if(!sameSize(vc->value,$3)){
+                                          yyerror("Expresion does not match required size (rows and columns)");
+                                          YYERROR;
+                                        }
+                                        int i,j;
+                                        for (i=0;i<vc->value.rows;i++){
+                                              for (j=0;j<vc->value.columns;j++)
+                                              {
+                                              vc->value.values[i][j] += $3.values[i][j];
+                                              }
+                                        }
+                                        copyMatrix(&$$,vc);
+                                        freeMatrix(&$3);
                                   }
-                                  vc->value.values[0][0]+=$3;
-                                  $$=vc->value.values[0][0];
                                   }
     | VARIABLE OPE_TIMES_EQ EXPRESSION    {
                                   variableContent *vc= (variableContent*) $1->content;
@@ -205,11 +360,21 @@ EXPRESSION: FLOAT_VALUE          { $$ = $1; }
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
-                                  if(isMatrix(vc)){
-                                    showWarning(YEL "Accesing first element of matrix without [][] notation" RESET);
+                                  if(isSingleNumber($3)){
+
+                                          int i,j;
+                                          for (i=0;i<vc->value.rows;i++){
+                                                for (j=0;j<vc->value.columns;j++)
+                                                {
+                                                vc->value.values[i][j] *= $3.values[0][0];
+                                                }
+                                          }
+                                          copyMatrix(&$$,vc);
+                                          freeMatrix(&$3);
+                                  }else{
+                                        //TODO
+
                                   }
-                                  vc->value.values[0][0]*=$3;
-                                  $$=vc->value.values[0][0];
                                   }
     | VARIABLE OPE_PERC_EQ EXPRESSION    {
                                   variableContent *vc= (variableContent*) $1->content;
@@ -217,51 +382,311 @@ EXPRESSION: FLOAT_VALUE          { $$ = $1; }
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
-                                  if(isMatrix(vc)){
-                                    showWarning("Accesing first element of matrix without [][] notation");
+                                  if(!isSingleNumber($3)){
+                                    yyerror("Expression cannot be a matrix");
+                                    YYERROR;
                                   }
-                                  vc->value.values[0][0]=fmod(vc->value.values[0][0],$3);
-                                  $$=vc->value.values[0][0];
+                                  int i,j;
+                                  for (i=0;i<vc->value.rows;i++){
+                                        for (j=0;j<vc->value.columns;j++)
+                                        {
+                                        vc->value.values[i][j] = fmod(vc->value.values[i][j],$3.values[0][0]);
+                                        }
+                                  }
+                                  copyMatrix(&$$,vc);
+                                  freeMatrix(&$3);
                                   }
     /*-----------END OF ASSIGNING OPERATORS-----------*/
 
       /* LOGICAL OR */
-    | EXPRESSION OPE_VERT_VERT EXPRESSION   { $$ = ($1 || $3)}
+    | EXPRESSION OPE_VERT_VERT EXPRESSION    {
+
+                                  if(!sameSize($1,$3) && (!isSingleNumber($3))){
+                                    yyerror("Matrix have different size or second parameter is not only an element");
+                                    YYERROR;
+                                  }
+                                  int i,j;
+                                  copyExpression(&$$,&$1);
+                                  for (i=0;i<$1.rows;i++){
+                                        for (j=0;j<$1.columns;j++)
+                                        {
+                                          if(isSingleNumber($3)){
+                                            $$.values[i][j] = ($1.values[i][j]) || ($3.values[0][0]);
+                                          }else{
+                                            $$.values[i][j] = ($1.values[i][j]) || ($3.values[i][j]);
+                                          }
+                                        }
+                                  }
+                                  freeMatrix(&$1);
+                                  freeMatrix(&$3);
+                                  }
+
 
       /* LOGICAL AND */
-    | EXPRESSION OPE_AND_AND EXPRESSION   { $$ = ($1 && $3)}
+    | EXPRESSION OPE_AND_AND EXPRESSION    {
+                                  if(!sameSize($1,$3) && (!isSingleNumber($3))){
+                                    yyerror("Matrix have different size or second parameter is not only an element");
+                                    YYERROR;
+                                  }
+                                  int i,j;
+                                  copyExpression(&$$,&$1);
+                                  for (i=0;i<$1.rows;i++){
+                                        for (j=0;j<$1.columns;j++)
+                                        {
+                                          if(isSingleNumber($3)){
+                                            $$.values[i][j] = ($1.values[i][j]) && ($3.values[0][0]);
+                                          }else{
+                                            $$.values[i][j] = ($1.values[i][j]) && ($3.values[i][j]);
+                                          }
+                                        }
+                                  }
+                                  freeMatrix(&$1);
+                                  freeMatrix(&$3);
+                                  }
 
 
 
     /*-----------BEG OF COMPARISON OPERATORS-----------*/
-    | EXPRESSION OPE_EQ_EQ EXPRESSION   { $$ = ($1 == $3)}
-    | EXPRESSION OPE_EXCL_EQ EXPRESSION   { $$ = ($1 != $3)}
+    | EXPRESSION OPE_EQ_EQ EXPRESSION     {
+                                  if(!sameSize($1,$3) && (!isSingleNumber($3))){
+                                    yyerror("Matrix have different size or second parameter is not only an element");
+                                    YYERROR;
+                                  }
+                                  int i,j;
+                                  copyExpression(&$$,&$1);
+                                  for (i=0;i<$1.rows;i++){
+                                        for (j=0;j<$1.columns;j++)
+                                        {
+                                          if(isSingleNumber($3)){
+                                            $$.values[i][j] = ($1.values[i][j]) == ($3.values[0][0]);
+                                          }else{
+                                            $$.values[i][j] = ($1.values[i][j]) == ($3.values[i][j]);
+                                          }
+                                        }
+                                  }
+                                  freeMatrix(&$1);
+                                  freeMatrix(&$3);
+                                  }
+    | EXPRESSION OPE_EXCL_EQ EXPRESSION     {
+                                  if(!sameSize($1,$3) && (!isSingleNumber($3))){
+                                    yyerror("Matrix have different size or second parameter is not only an element");
+                                    YYERROR;
+                                  }
+                                  int i,j;
+                                  copyExpression(&$$,&$1);
+                                  for (i=0;i<$1.rows;i++){
+                                        for (j=0;j<$1.columns;j++)
+                                        {
+                                          if(isSingleNumber($3)){
+                                            $$.values[i][j] = ($1.values[i][j]) != ($3.values[0][0]);
+                                          }else{
+                                            $$.values[i][j] = ($1.values[i][j]) != ($3.values[i][j]);
+                                          }
+                                        }
+                                  }
+                                  freeMatrix(&$1);
+                                  freeMatrix(&$3);
+                                  }
 
-    | EXPRESSION '>' EXPRESSION   { $$ = ($1 > $3)}
-    | EXPRESSION OPE_MORETHAN_EQ EXPRESSION   { $$ = ($1 >= $3)}
+    | EXPRESSION '>' EXPRESSION     {
+                                  if(!sameSize($1,$3) && (!isSingleNumber($3))){
+                                    yyerror("Matrix have different size or second parameter is not only an element");
+                                    YYERROR;
+                                  }
+                                  int i,j;
+                                  copyExpression(&$$,&$1);
+                                  for (i=0;i<$1.rows;i++){
+                                        for (j=0;j<$1.columns;j++)
+                                        {
+                                          if(isSingleNumber($3)){
+                                            $$.values[i][j] = ($1.values[i][j]) > ($3.values[0][0]);
+                                          }else{
+                                            $$.values[i][j] = ($1.values[i][j]) > ($3.values[i][j]);
+                                          }
+                                        }
+                                  }
+                                  freeMatrix(&$1);
+                                  freeMatrix(&$3);
+                                  }
+    | EXPRESSION OPE_MORETHAN_EQ EXPRESSION    {
+                                  if(!sameSize($1,$3) && (!isSingleNumber($3))){
+                                    yyerror("Matrix have different size or second parameter is not only an element");
+                                    YYERROR;
+                                  }
+                                  int i,j;
+                                  copyExpression(&$$,&$1);
+                                  for (i=0;i<$1.rows;i++){
+                                        for (j=0;j<$1.columns;j++)
+                                        {
+                                          if(isSingleNumber($3)){
+                                            $$.values[i][j] = ($1.values[i][j]) >= ($3.values[0][0]);
+                                          }else{
+                                            $$.values[i][j] = ($1.values[i][j]) >= ($3.values[i][j]);
+                                          }
+                                        }
+                                  }
+                                  freeMatrix(&$1);
+                                  freeMatrix(&$3);
+                                  }
 
-    | EXPRESSION '<' EXPRESSION   { $$ = ($1 < $3)}
-    | EXPRESSION OPE_LESSTHAN_EQ EXPRESSION   { $$ = ($1 <= $3)}
+    | EXPRESSION '<' EXPRESSION    {
+                                  if(!sameSize($1,$3) && (!isSingleNumber($3))){
+                                    yyerror("Matrix have different size or second parameter is not only an element");
+                                    YYERROR;
+                                  }
+                                  int i,j;
+                                  copyExpression(&$$,&$1);
+                                  for (i=0;i<$1.rows;i++){
+                                        for (j=0;j<$1.columns;j++)
+                                        {
+                                          if(isSingleNumber($3)){
+                                            $$.values[i][j] = ($1.values[i][j]) < ($3.values[0][0]);
+                                          }else{
+                                            $$.values[i][j] = ($1.values[i][j]) < ($3.values[i][j]);
+                                          }
+                                        }
+                                  }
+                                  freeMatrix(&$1);
+                                  freeMatrix(&$3);
+                                  }
+    | EXPRESSION OPE_LESSTHAN_EQ EXPRESSION   {
+                                  if(!sameSize($1,$3) && (!isSingleNumber($3))){
+                                    yyerror("Matrix have different size or second parameter is not only an element");
+                                    YYERROR;
+                                  }
+                                  int i,j;
+                                  copyExpression(&$$,&$1);
+                                  for (i=0;i<$1.rows;i++){
+                                        for (j=0;j<$1.columns;j++)
+                                        {
+                                          if(isSingleNumber($3)){
+                                            $$.values[i][j] = ($1.values[i][j]) <= ($3.values[0][0]);
+                                          }else{
+                                            $$.values[i][j] = ($1.values[i][j]) <= ($3.values[i][j]);
+                                          }
+                                        }
+                                  }
+                                  freeMatrix(&$1);
+                                  freeMatrix(&$3);
+                                  }
     /*-----------END OF COMPARISON OPERATORS-----------*/
 
     /*-----------BEG OF SUM OPERATORS-----------*/
-	  | EXPRESSION '+' EXPRESSION	 { $$ = $1 + $3; }
-	  | EXPRESSION '-' EXPRESSION	 { $$ = $1 - $3; }
+	  | EXPRESSION '+' EXPRESSION	 {
+                                  if(!sameSize($1,$3) && (!isSingleNumber($3))){
+                                    yyerror("Matrix have different size or second parameter is not only an element");
+                                    YYERROR;
+                                  }
+                                  int i,j;
+                                  copyExpression(&$$,&$1);
+                                  for (i=0;i<$1.rows;i++){
+                                        for (j=0;j<$1.columns;j++)
+                                        {
+                                          if(isSingleNumber($3)){
+                                            $$.values[i][j] = ($1.values[i][j]) + ($3.values[0][0]);
+                                          }else{
+                                            $$.values[i][j] = ($1.values[i][j]) + ($3.values[i][j]);
+                                          }
+                                        }
+                                  }
+                                  freeMatrix(&$1);
+                                  freeMatrix(&$3);
+                                  }
+	  | EXPRESSION '-' EXPRESSION	 {
+                                  if(!sameSize($1,$3) && (!isSingleNumber($3))){
+                                    yyerror("Matrix have different size or second parameter is not only an element");
+                                    YYERROR;
+                                  }
+                                  int i,j;
+                                  copyExpression(&$$,&$1);
+                                  for (i=0;i<$1.rows;i++){
+                                        for (j=0;j<$1.columns;j++)
+                                        {
+                                          if(isSingleNumber($3)){
+                                            $$.values[i][j] = ($1.values[i][j]) - ($3.values[0][0]);
+                                          }else{
+                                            $$.values[i][j] = ($1.values[i][j]) - ($3.values[i][j]);
+                                          }
+                                        }
+                                  }
+                                  freeMatrix(&$1);
+                                  freeMatrix(&$3);
+                                  }
     /*-----------END OF SUM OPERATORS-----------*/
 
-    /*-----------BEG OF PLUS OPERATORS-----------*/
-	  | EXPRESSION '*' EXPRESSION  { $$ = $1 * $3; }
-	  | EXPRESSION '/' EXPRESSION	 { $$ = $1 / $3; }
-    | EXPRESSION '%' EXPRESSION	 { $$ = fmod($1,$3); }
+    /*-----------BEG OF PLUS OPERATORS-----------*/ //TODO
+  | EXPRESSION '*' EXPRESSION  { /*$$ = $1 * $3;*/ }
+	  | EXPRESSION '/' EXPRESSION	 {
+                                  if(!isSingleNumber($3)){
+                                    yyerror("Second expression cannot be a matrix");
+                                    YYERROR;
+                                  }
+                                  int i,j;
+                                  copyExpression(&$$,&$1);
+                                  for (i=0;i<$1.rows;i++){
+                                        for (j=0;j<$1.columns;j++)
+                                        {
+                                            $$.values[i][j] = ($1.values[i][j]) / ($3.values[0][0]);
+                                        }
+                                  }
+                                  freeMatrix(&$1);
+                                  freeMatrix(&$3);
+                                  }
+    | EXPRESSION '%' EXPRESSION	 {
+                                  if(!isSingleNumber($3)){
+                                    yyerror("Second expression cannot be a matrix");
+                                    YYERROR;
+                                  }
+                                  int i,j;
+                                  copyExpression(&$$,&$1);
+                                  for (i=0;i<$$.rows;i++){
+                                        for (j=0;j<$$.columns;j++)
+                                        {
+                                        $$.values[i][j] = fmod($1.values[i][j],$3.values[0][0]);
+                                        }
+                                  }
+                                  freeMatrix(&$1);
+                                  freeMatrix(&$3);
+                                  }
     /*-----------END OF PLUS OPERATORS-----------*/
 
 
     /* LOGICAL NOT */
-    | '!' EXPRESSION                { $$ = !($2); }
+    | '!' EXPRESSION  {
+                      int i,j;
+                      copyExpression(&$$,&$2);
+                      for (i=0;i<$$.rows;i++){
+                            for (j=0;j<$$.columns;j++)
+                            {
+                            $$.values[i][j] = !($2.values[i][j]);
+                            }
+                      }
+                      freeMatrix(&$2);
+                      }
 
     /*-----------BEG OF UNARY PLUS AND MINUS OPERATORS-----------*/
-    | '-' EXPRESSION %prec NEGATE   { $$ = -$2;}
-    | '+' EXPRESSION                { $$ = $2;}
+    | '-' EXPRESSION %prec NEGATE  {
+                                  int i,j;
+                                  copyExpression(&$$,&$2);
+                                  for (i=0;i<$$.rows;i++){
+                                        for (j=0;j<$$.columns;j++)
+                                        {
+                                        $$.values[i][j] = -($2.values[i][j]);
+                                        }
+                                  }
+                                  freeMatrix(&$2);
+                                  }
+    | '+' EXPRESSION  {
+                      int i,j;
+                      copyExpression(&$$,&$2);
+                      for (i=0;i<$$.rows;i++){
+                            for (j=0;j<$$.columns;j++)
+                            {
+                            $$.values[i][j] = +($2.values[i][j]);
+                            }
+                      }
+                      freeMatrix(&$2);
+                      }
     /*-----------END OF UNARY PLUS AND MINUS OPERATORS-----------*/
 
     /*-----------BEG OF MATRIX ACCESS OPERATORS-----------*/
@@ -275,16 +700,20 @@ EXPRESSION: FLOAT_VALUE          { $$ = $1; }
                                     yyerror("That element is not a matrix");
                                     YYERROR;
                                   }
-                                  if( ($3<0) || ($6<0)){
-                                    yyerror("Negative index not allowed");
+                                  if(!isSingleNumber($3)){
+                                    yyerror("First expression cannot be a matrix");
                                     YYERROR;
                                   }
-                                  if(!isInBounds($3,$6,vc)){
+                                  if(!isSingleNumber($6)){
+                                    yyerror("First expression cannot be a matrix");
+                                    YYERROR;
+                                  }
+                                  if(!isInBounds($3.values[0][0],$6.values[0][0],vc)){
                                     yyerror("Index outside the matrix");
                                     YYERROR;
                                   }
-                                  double aux= vc->value.values[(int)$3][(int)$6];
-                                  $$=aux;
+                                  double aux= vc->value.values[(int)$3.values[0][0]][(int)$6.values[0][0]];
+                                  defOneNumberMatrix(&$$,aux);
                                   }
 
     | VARIABLE '[' EXPRESSION ']' {
@@ -297,16 +726,16 @@ EXPRESSION: FLOAT_VALUE          { $$ = $1; }
                                     yyerror("That element is not a vector");
                                     YYERROR;
                                   }
-                                  if($3<0){
-                                    yyerror("Negative index not allowed");
+                                  if(!isSingleNumber($3)){
+                                    yyerror("First expression cannot be a matrix");
                                     YYERROR;
                                   }
-                                  if(!isInBounds($3,0,vc)){
+                                  if(!isInBounds($3.values[0][0],0,vc)){
                                     yyerror("Index outside the matrix");
                                     YYERROR;
                                   }
-                                  double aux= vc->value.values[(int)$3][0];
-                                  $$=aux;
+                                  double aux= vc->value.values[(int)$3.values[0][0]][0];
+                                  defOneNumberMatrix(&$$,aux);
                                   }
     /*-----------END OF MATRIX ACCESS OPERATORS-----------*/
 
@@ -314,8 +743,13 @@ EXPRESSION: FLOAT_VALUE          { $$ = $1; }
     /*-----------BEG OF FUNCTION CALLS-----------*/
     | ONE_OPERATOR_FUNCTION '(' EXPRESSION ')' {
                                   functionContent *fc= (functionContent*) $1->content;
-                                  $$ = (*(fc->funcPointer))($3);
+                                  if(!isSingleNumber($3)){
+                                    yyerror("Functions only applyable to single numbers, put a point before it");
+                                    YYERROR;
                                   }
+                                  double aux = (*(fc->funcPointer))($3.values[0][0]);
+                                  defOneNumberMatrix(&$$,aux);
+                                  }//TODO: FUNCTIONS TO ALL MATRIX ELEMENTS
     /*-----------END OF FUNCTION CALLS-----------*/
 
 
@@ -326,11 +760,11 @@ EXPRESSION: FLOAT_VALUE          { $$ = $1; }
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
-                                  if(isMatrix(vc)){
-                                    showWarning("Accesing first element of matrix without [][] notation");
+                                  if(!isSingleNumber(vc->value)){
+                                    yyerror("Trying to use '++' operator on matrix, use 'matrix = matrix.+ 1' instead");
                                   }
                                   vc->value.values[0][0]++;
-                                  $$=vc->value.values[0][0];
+                                  copyMatrix(&$$,vc);
                                 }
     | VARIABLE OPE_MINUS_MINUS  {
                                   variableContent *vc= (variableContent*) $1->content;
@@ -338,11 +772,11 @@ EXPRESSION: FLOAT_VALUE          { $$ = $1; }
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
-                                  if(isMatrix(vc)){
-                                    showWarning("Accesing first element of matrix without [][] notation");
+                                  if(!isSingleNumber(vc->value)){
+                                    yyerror("Trying to use '++' operator on matrix, use 'matrix = matrix.+ 1' instead");
                                   }
                                   vc->value.values[0][0]--;
-                                  $$=vc->value.values[0][0];
+                                  copyMatrix(&$$,vc);
                                 }
     /*-----------END OF POSTFIX INCREMENT AND DECREMENT-----------*/
 
@@ -382,6 +816,10 @@ return vc->defined;
 
 }
 
+short isSingleNumber(variableValue vv){
+  return ((vv.rows==1) && (vv.columns==1));
+}
+
 short isMatrix(variableContent *vc){
   /*if(vc->value.rows==1 && vc->value.columns==1){
     return 0;
@@ -392,11 +830,77 @@ short isMatrix(variableContent *vc){
   //return ((vc->value.rows>1) || (vc->value.columns>1));
 }
 
+short isVector(variableContent *vc){
+  //return vc->value.defAsMatrix;
+  return ((vc->value.rows>0) && (vc->value.columns==1) && vc->value.defAsMatrix);
+}
+
 short isInBounds(int x, int y,variableContent *vc){
   /*if(vc->value.rows>x && vc->value.columns>y){
     return 1;
   }else{
     return 0;
   }*/
-  return ((vc->value.rows>x) && (vc->value.columns>y));
+  return ((vc->value.rows>x) && (vc->value.columns>y) && x>=0 && y>=0 );
+}
+
+void copyMatrix (variableValue *dest, variableContent *vc) {
+  int i;
+  dest->rows=vc->value.rows;
+  dest->columns=vc->value.columns;
+  dest->defAsMatrix=vc->value.defAsMatrix;
+  dest->values = malloc(sizeof(double*)* vc->value.rows);
+  memcpy(dest->values,vc->value.values,vc->value.rows*sizeof(double*));
+  for(i = 0; i < vc->value.rows ; ++ i){
+    dest->values[i]=malloc(vc->value.columns * sizeof(double));
+    memcpy(dest->values[i], vc->value.values[i], vc->value.columns * sizeof(double));
+  }
+}
+
+void freeMatrix(variableValue *vv){
+  if(vv){
+    int i;
+    for(i=0;i<vv->rows;i++){
+      free(vv->values[i]);
+    }
+    free(vv->values);
+  }
+}
+
+void printMatrix(variableValue vv){
+  int i,j;
+   for (i=0;i<vv.rows;i++)
+   {
+       for (j=0;j<vv.columns;j++)
+       {
+           printf(" %5g ", vv.values[i][j]);
+       }
+       printf("\n");
+   }
+}
+
+short sameSize(variableValue vc1, variableValue vc2){
+  return ((vc1.rows==vc2.rows) && (vc1.columns==vc2.columns));
+}
+
+void defOneNumberMatrix(variableValue *vv, double number){
+  vv->rows = 1;
+  vv->columns = 1;
+  vv->values=malloc(sizeof(double*));
+  vv->values[0] = malloc(sizeof(double));
+  vv->values[0][0] = number;
+  vv->defAsMatrix=0;
+}
+
+void copyExpression (variableValue *dest, variableValue *src){
+  int i;
+  dest->rows=src->rows;
+  dest->columns=src->columns;
+  dest->defAsMatrix=src->defAsMatrix;
+  dest->values = malloc(sizeof(double*)*src->rows);
+  memcpy(dest->values,src->values,src->rows*sizeof(double*));
+  for(i = 0; i < src->rows ; ++ i){
+    dest->values[i]=malloc(src->columns * sizeof(double));
+    memcpy(dest->values[i], src->values[i], src->columns * sizeof(double));
+  }
 }
