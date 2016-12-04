@@ -477,10 +477,17 @@ void printAllVariables(hashTable table) {
 
     for (i = 0; i < numOfElements; i++) {                                               //And we print all elements
         if (((variableContent *) vectorOfSD[i]->content)->defined && (vectorOfSD[i]->type == TYPE_VARIABLE) ) {
+
+
             printf("\t[" CYN "%s" RESET "] with a size of [" CYN "%d" RESET "," CYN "%d" RESET "]",
                    ((variableContent *) vectorOfSD[i]->content)->name,
                    (((variableContent *) vectorOfSD[i]->content)->value).rows,
                    (((variableContent *) vectorOfSD[i]->content)->value).rows);
+
+            printf(BLU"\n\tValue: \n");
+            printMatrix(((variableContent *) vectorOfSD[i]->content)->value);
+
+            printf(RESET"\n");
 
             /*if ((i+1) % 4 == 0)*/ printf("\n");
         }
