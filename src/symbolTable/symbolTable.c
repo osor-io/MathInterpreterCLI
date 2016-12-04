@@ -28,8 +28,8 @@ void initSymbolTable(symbolTable **oSymbolTable) {
  *
  * */
 void deleteSymbolTable(symbolTable **oSymbolTable) {
-    deleteHastTable(&((*oSymbolTable)->identifiers));               //First we delete the hash tables
-    deleteHastTable(&((*oSymbolTable)->reserved));
+    deleteHastTable(&((*oSymbolTable)->identifiers),1);               //First we delete the hash tables
+    deleteHastTable(&((*oSymbolTable)->reserved),0);
     free(*oSymbolTable);                                            //And then the struct of the symbol table itself
 }
 
@@ -82,7 +82,7 @@ void printVariables(symbolTable *oSymbolTable){
 }
 
 void clearVariables(symbolTable *oSymbolTable){
-    deleteHastTable(&((oSymbolTable)->identifiers));
+    deleteHastTable(&((oSymbolTable)->identifiers),1);
     initHashTable(&((oSymbolTable)->identifiers));
     parseConstants(&oSymbolTable);
 }

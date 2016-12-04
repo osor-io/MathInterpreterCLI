@@ -21,7 +21,7 @@ typedef struct hashElement **hashTable;
 
 int initHashTable(hashTable **table);
 
-int deleteHastTable(hashTable **table);
+int deleteHastTable(hashTable **table,short variables);
 
 unsigned int badHash(char *key);
 

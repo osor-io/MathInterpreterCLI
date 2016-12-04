@@ -79,7 +79,7 @@ int initHashTable(hashTable **table) {
  * To then delete the table itself
  *
  * */
-int deleteHastTable(hashTable **table) {
+int deleteHastTable(hashTable **table, short variables) {
 
     if (table == NULL || *table == NULL || **table == NULL)
         return HASH_ERROR;                              //If the pointer to the table, the table, or the elements are NULL then we cannot delete.
@@ -93,10 +93,20 @@ int deleteHastTable(hashTable **table) {
             currentElement = elementToDelete->next;     //And we save a reference to the next one in the list to delete
             if (elementToDelete->data != NULL) {
 
-                //ADHOC:
-                variableContent *vc = (((symbolData *) (elementToDelete->data))->content);
-                free(vc->name);
-                free(vc->value.values);
+                if (variables) {    //DELETING A VARIABLE
+                    //ADHOC:
+                    variableContent *vc = (((symbolData *) (elementToDelete->data))->content);
+                    free(vc->name);
+                    int r;
+                    for (r = 0; r < vc->value.rows; r++) {
+                        free(vc->value.values[r]);
+                    }
+                    free(vc->value.values);
+                    free(vc);
+                } else {
+                    functionContent *fc = (((symbolData *) (elementToDelete->data))->content);
+                    free(fc);
+                }
 
                 free(elementToDelete->data);            //We have chosen to delete the elements data when we delete the element itself if it's not set to NULL
             }
@@ -108,11 +118,20 @@ int deleteHastTable(hashTable **table) {
                 currentElement = elementToDelete->next;
                 if (elementToDelete->data != NULL) {
 
-                    //ADHOC:
-                    variableContent *vc = (((symbolData *) (elementToDelete->data))->content);
-                    free(vc->name);
-                    free(vc->value.values);
-
+                    if (variables) {
+                        //ADHOC:
+                        variableContent *vc = (((symbolData *) (elementToDelete->data))->content);
+                        free(vc->name);
+                        int r;
+                        for (r = 0; r < vc->value.rows; r++) {
+                            free(vc->value.values[r]);
+                        }
+                        free(vc->value.values);
+                        free(vc);
+                    } else {
+                        functionContent *fc = (((symbolData *) (elementToDelete->data))->content);
+                        free(fc);
+                    }
 
                     free(elementToDelete->data);            //We have chosen to delete the elements data when we delete the element itself if it's not set to NULL
                 }
@@ -420,8 +439,8 @@ void printDataSorted(hashTable table, short vervose) {
 
 //ADHOC:
 int stringCmpSD(const void *a, const void *b) {
-    char **ia = &((variableContent*)((*((const symbolData **)a))->content))->name;
-    char **ib = &((variableContent*)((*((const symbolData **)b))->content))->name;
+    char **ia = &((variableContent *) ((*((const symbolData **) a))->content))->name;
+    char **ib = &((variableContent *) ((*((const symbolData **) b))->content))->name;
     return strcmp(*ia, *ib);
 }
 
@@ -476,15 +495,15 @@ void printAllVariables(hashTable table) {
 
 
     for (i = 0; i < numOfElements; i++) {                                               //And we print all elements
-        if (((variableContent *) vectorOfSD[i]->content)->defined && (vectorOfSD[i]->type == TYPE_VARIABLE) ) {
+        if (((variableContent *) vectorOfSD[i]->content)->defined && (vectorOfSD[i]->type == TYPE_VARIABLE)) {
 
 
-            printf("\t[" CYN "%s" RESET "] with a size of [" CYN "%d" RESET "," CYN "%d" RESET "]",
+            printf("  [" CYN "%s" RESET "] with a size of [" CYN "%d" RESET "," CYN "%d" RESET "]",
                    ((variableContent *) vectorOfSD[i]->content)->name,
                    (((variableContent *) vectorOfSD[i]->content)->value).rows,
-                   (((variableContent *) vectorOfSD[i]->content)->value).rows);
+                   (((variableContent *) vectorOfSD[i]->content)->value).columns);
 
-            printf(BLU"\n\tValue: \n");
+            printf(BLU"\n  Value: \n");
             printMatrix(((variableContent *) vectorOfSD[i]->content)->value);
 
             printf(RESET"\n");

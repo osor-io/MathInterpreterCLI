@@ -67,18 +67,21 @@ int main(int argc, char **argv) {
         yyparse();
 
     } else {
+        rs=NULL;
         yyparse();
     }
+
 
     yylex_destroy();
 
 
     //And we delete everything before ending the program
-    if (!st)
+    if (st) {
         deleteSymbolTable(&st);
-    if (!rs)
+    }
+    if (rs) {
         deleteReaderSystem(&rs);
-
+    }
 
     return EXIT_SUCCESS;
 

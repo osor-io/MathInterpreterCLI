@@ -42,7 +42,7 @@ void printfHelp() {
 
     printf(GRN"\nOPERATORS CURRENTLY SUPPORTED:\n"RESET);
 
-    printf(BLU "    ["RED" / "BLU"] : second element has to be a single element\n" RESET);
+    printf(BLU "	["RED" / "BLU"] : second element has to be a single element\n" RESET);
     printf(BLU "	["RED" /= "BLU"] : second element has to be a single element\n" RESET);
     printf(BLU "	["RED" && "BLU"] : supported for matrices and single element as second operand\n" RESET);
     printf(BLU "	["RED" || "BLU"] : supported for matrices and single element as second operand\n" RESET);
