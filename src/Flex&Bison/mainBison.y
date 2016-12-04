@@ -47,15 +47,12 @@ void generateMatrix (variableValue *dest, int rows, int columns);
         symbolData *pts;
 }
 
- /*%destructor  { printf("Discarding pointer to symbolData"); }*/
-
 
 %token<val> NUMBER_LITERAL
 %token<pts> VARIABLE ONE_OPERATOR_FUNCTION
 %token END_OF_FILE
 %token '+' '-' '*' '/' '(' ')' OPE_SLASH_EQ   OPE_AND_AND OPE_VERT_VERT OPE_MINUS_EQ OPE_MINUS_MINUS OPE_PLUS_EQ OPE_PLUS_PLUS '<' OPE_LESSTHAN_EQ   '>' OPE_MORETHAN_EQ   '!' OPE_EXCL_EQ OPE_EQ_EQ OPE_TIMES_EQ OPE_PERC_EQ  '[' ']' ';' '%'
-%token NEW_LINE QUIT HELP DECLARE EXISTS_VARIABLE CLEAR_VARIABLES LIST_VARIABLES
-
+%token NEW_LINE QUIT HELP DECLARE
 
 %right OPE_PLUS_EQ OPE_MINUS_EQ
 %right '=' OPE_SLASH_EQ  OPE_TIMES_EQ  OPE_PERC_EQ
@@ -646,7 +643,7 @@ EXPRESSION: NUMBER_LITERAL          {
                                   freeMatrix(&$3);
                                 }else{
                                       if($1.columns != $3.rows){
-                                        yyerror("Rows of the first matrix must match columns of the second one");
+                                        yyerror("Columns of the first matrix must match rows of the second one");
                                         YYERROR;
                                       }
                                       int i,j,k;
@@ -773,7 +770,7 @@ EXPRESSION: NUMBER_LITERAL          {
                                     yyerror("Vector not declared");
                                     YYERROR;
                                   }
-                                  if(!isMatrix(vc)){
+                                  if(!isVector(vc)){
                                     yyerror("That element is not a vector");
                                     YYERROR;
                                   }

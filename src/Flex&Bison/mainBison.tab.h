@@ -60,10 +60,7 @@
      QUIT = 276,
      HELP = 277,
      DECLARE = 278,
-     EXISTS_VARIABLE = 279,
-     CLEAR_VARIABLES = 280,
-     LIST_VARIABLES = 281,
-     NEGATE = 282
+     NEGATE = 279
    };
 #endif
 /* Tokens.  */
@@ -88,10 +85,7 @@
 #define QUIT 276
 #define HELP 277
 #define DECLARE 278
-#define EXISTS_VARIABLE 279
-#define CLEAR_VARIABLES 280
-#define LIST_VARIABLES 281
-#define NEGATE 282
+#define NEGATE 279
 
 
 
@@ -105,7 +99,7 @@ typedef union YYSTYPE
         symbolData *pts;
 }
 /* Line 1529 of yacc.c.  */
-#line 109 "mainBison.tab.h"
+#line 103 "mainBison.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
