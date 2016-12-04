@@ -39,7 +39,7 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     FLOAT_VALUE = 258,
+     NUMBER_LITERAL = 258,
      VARIABLE = 259,
      ONE_OPERATOR_FUNCTION = 260,
      END_OF_FILE = 261,
@@ -56,7 +56,7 @@
      OPE_EQ_EQ = 272,
      OPE_TIMES_EQ = 273,
      OPE_PERC_EQ = 274,
-     NEWLINE = 275,
+     NEW_LINE = 275,
      QUIT = 276,
      HELP = 277,
      DECLARE = 278,
@@ -67,7 +67,7 @@
    };
 #endif
 /* Tokens.  */
-#define FLOAT_VALUE 258
+#define NUMBER_LITERAL 258
 #define VARIABLE 259
 #define ONE_OPERATOR_FUNCTION 260
 #define END_OF_FILE 261
@@ -84,7 +84,7 @@
 #define OPE_EQ_EQ 272
 #define OPE_TIMES_EQ 273
 #define OPE_PERC_EQ 274
-#define NEWLINE 275
+#define NEW_LINE 275
 #define QUIT 276
 #define HELP 277
 #define DECLARE 278
@@ -98,7 +98,7 @@
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 41 "mainBison.y"
+#line 44 "mainBison.y"
 {
         variableValue matrixVal;
         double val;

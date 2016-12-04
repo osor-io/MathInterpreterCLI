@@ -12,44 +12,29 @@ readerSystem *global_rs = NULL;
 #include "./Flex&Bison/mainBison.tab.c"
 #include "./Flex&Bison/lex.yy.c"
 
-#define MAX_INCLUDED_FILES 20
 
 int main(int argc, char **argv) {
 
     char *filename = NULL;
-    char *ourPathToDefine = "./resources/RESERVED_WORDS.h";
-    char *includedPaths[MAX_INCLUDED_FILES];
-    int c, includedFileIndex = 0;
-    short workAfterFile = 0, alreadySaidFile = 0;
+    int c;
+    short alreadySaidFile = 0;
 
     printf("\n");
     if (argc == 1) {
         printf("Starting with the default mode...\n");
     } else {
 
-        while ((c = getopt(argc, argv, "l:i:f:")) != -1)
+        while ((c = getopt(argc, argv, "l:")) != -1)
             switch (c) {
                 case 'l':
                     if (alreadySaidFile) {
-                        manageFatalError(ERR_FILE_ERROR,
-                                         "You cant load a file (-l) after including one for interpretation with (-f)");
-                    }
-                    filename = optarg;
-                    workAfterFile = 1;
-                    alreadySaidFile = 1;
-                    break;
-                case 'i':
-                    includedPaths[includedFileIndex++] = optarg;
-                    break;
-                case 'f':
-                    if (alreadySaidFile) {
-                        manageFatalError(ERR_FILE_ERROR, "You cant include a file (-f) after loading one (-l)");
+                        manageFatalError(ERR_FILE_ERROR, "You cant include more than one file (-l)");
                     }
                     filename = optarg;
                     alreadySaidFile = 1;
                     break;
                 case '?':
-                    if (optopt == 'i' || optopt == 'f')
+                    if (optopt == 'l')
                         fprintf(stderr, "Option -%c requires an argument.\n", optopt);
                     else if (isprint(optopt))
                         fprintf(stderr, "Unknown option `-%c'.\n", optopt);
@@ -61,14 +46,7 @@ int main(int argc, char **argv) {
                 default:
                     abort();
             }
-
-        includedPaths[includedFileIndex] = NULL;
-        includedFileIndex = 0;
-
         printf("Input file selected: %s\n", filename);
-        while (includedPaths[includedFileIndex] != NULL) {
-            printf("Included file: %s\n", includedPaths[includedFileIndex++]);
-        }
     }
 
     //Init the symbol table
@@ -87,11 +65,6 @@ int main(int argc, char **argv) {
         yyin = rs->file;
 
         yyparse();
-
-        if (workAfterFile) {
-            yyrestart(stdin);
-            yyparse();
-        }
 
     } else {
         yyparse();

@@ -91,11 +91,12 @@ int deleteHastTable(hashTable **table) {
         if ((**table)[i] != NULL) {                     //If the element is not null
             elementToDelete = (**table)[i];             //We need to delete it
             currentElement = elementToDelete->next;     //And we save a reference to the next one in the list to delete
-            if (elementToDelete->data != NULL){
+            if (elementToDelete->data != NULL) {
 
                 //ADHOC:
-                free(((variableContent*)(elementToDelete->data))->name);
-                free(((variableContent*)(elementToDelete->data))->value.values);
+                variableContent *vc = (((symbolData *) (elementToDelete->data))->content);
+                free(vc->name);
+                free(vc->value.values);
 
                 free(elementToDelete->data);            //We have chosen to delete the elements data when we delete the element itself if it's not set to NULL
             }
@@ -105,11 +106,12 @@ int deleteHastTable(hashTable **table) {
                    NULL) {                              //We iterate through all the elements in the list for that position to delete them all
                 elementToDelete = currentElement;
                 currentElement = elementToDelete->next;
-                if (elementToDelete->data != NULL){
+                if (elementToDelete->data != NULL) {
 
                     //ADHOC:
-                    free(((variableContent*)(elementToDelete->data))->name);
-                    free(((variableContent*)(elementToDelete->data))->value.values);
+                    variableContent *vc = (((symbolData *) (elementToDelete->data))->content);
+                    free(vc->name);
+                    free(vc->value.values);
 
 
                     free(elementToDelete->data);            //We have chosen to delete the elements data when we delete the element itself if it's not set to NULL
@@ -343,6 +345,7 @@ int stringCmp(const void *a, const void *b) {
     return strcmp(*ia, *ib);
 }
 
+
 /**
  * Same as the function above but printing in alphabetical order.
  *
@@ -406,11 +409,82 @@ void printDataSorted(hashTable table, short vervose) {
             printf("\tElement %3d:\t=>\t[" CYN "%s" RESET "]\n", i, vectorOfStrings[i]);
         else {
             printf("\t[" CYN "%s" RESET "]", vectorOfStrings[i]);
-            if ((i+1) % 4 == 0) printf("\n");
+            if ((i + 1) % 4 == 0) printf("\n");
         }
         free(vectorOfStrings[i]);                                                       //While we free em
     }
     free(vectorOfStrings);                                                              //Finally we free the whole vector of strings.
 
+}
+
+
+//ADHOC:
+int stringCmpSD(const void *a, const void *b) {
+    char **ia = &((variableContent*)((*((const symbolData **)a))->content))->name;
+    char **ib = &((variableContent*)((*((const symbolData **)b))->content))->name;
+    return strcmp(*ia, *ib);
+}
+
+void printAllVariables(hashTable table) {
+
+    symbolData **vectorOfSD;
+
+    if (table == NULL)
+        return;                                         //If the the table is NULL then we cannot print it.
+
+    int i;
+    hashElement *currentElement;
+    int numOfElements = 0;
+
+
+    for (i = 0; i < TABLESIZE; i++) {                   //First we read the number of elements
+        if (table[i] != NULL) {
+            currentElement = table[i];
+            numOfElements++;
+            currentElement = currentElement->next;
+            while (currentElement != NULL) {
+                numOfElements++;
+                currentElement = currentElement->next;
+            }
+        }
+    }
+
+    vectorOfSD = malloc(((size_t) numOfElements) * sizeof(symbolData *));
+
+    int j = 0;                                          //Now we save all elements inside our array
+    for (i = 0; i < TABLESIZE; i++) {
+        if (table[i] != NULL) {
+            currentElement = table[i];
+            vectorOfSD[j] = (symbolData *) currentElement->data;
+            j++;
+            currentElement = currentElement->next;
+            while (currentElement !=
+                   NULL) {                                            //Do this also for the sons of the elements
+                if (currentElement->key != NULL && currentElement->data != NULL) {
+                    vectorOfSD[j] = (symbolData *) currentElement->data;
+                    j++;
+                    currentElement = currentElement->next;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    qsort(vectorOfSD, (size_t) numOfElements, sizeof(symbolData *),
+          stringCmpSD);          //Call a fast quicksort to sort all elements using the function above.
+
+
+    for (i = 0; i < numOfElements; i++) {                                               //And we print all elements
+        if (((variableContent *) vectorOfSD[i]->content)->defined && (vectorOfSD[i]->type == TYPE_VARIABLE) ) {
+            printf("\t[" CYN "%s" RESET "] with a size of [" CYN "%d" RESET "," CYN "%d" RESET "]",
+                   ((variableContent *) vectorOfSD[i]->content)->name,
+                   (((variableContent *) vectorOfSD[i]->content)->value).rows,
+                   (((variableContent *) vectorOfSD[i]->content)->value).rows);
+
+            /*if ((i+1) % 4 == 0)*/ printf("\n");
+        }
+    }
+    free(vectorOfSD);                                                              //Finally we free the whole vector of strings.
 
 }

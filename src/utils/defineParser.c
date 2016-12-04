@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "defineParser.h"
-#include "../errorManager/errorManager.h"
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
@@ -40,163 +39,109 @@ void parseReservedWords(symbolTable **oSymbolTable, char *pathToDefineFile) {
         //msymbolData->lexicalComponent = LexCompBuf;
 
         addElement(((*oSymbolTable)->reserved), key, (void *) msymbolData);
-    }
+    }sin
     fclose(file);
 }*/
 
-// function type
-typedef double (*OneArgFunctionCallback)(double);
 
-OneArgFunctionCallback functions[] = {
-        &acos,
-        &asin,
-        &atan,
-        &ceil,
-        &cos,
-        &cosh,
-        &exp,
-        &fabs,
-        &floor,
-        &log,
-        &log10,
-        &sin,
-        &sinh,
-        &sqrt,
-        &tan,
-        &tanh,
-        &erf,
-        &erfc,
-        &j0,
-        &j1,
-        &lgamma,
-        &y0,
-        &y1,
-        &acosh,
-        &asinh,
-        &atanh,
-        &cbrt,
-        &expm1,
-        &logb,
-        &rint,
-        NULL
+
+struct init_fncts {
+    char *fname;
+
+    double (*fnct)(double);
 };
 
-void getNameOf(unsigned short index, char *name) {
+struct init_fncts arith_fncts[]
+        = {
+                "acos", acos,
+                "asin", asin,
+                "atan", atan,
+                "ceil", ceil,
+                "cos", cos,
+                "cosh", cosh,
+                "exp", exp,
+                "fabs", fabs,
+                "floor", floor,
+                "log", log,
+                "log10", log10,
+                "sin", sin,
+                "sinh", sinh,
+                "sqrt", sqrt,
+                "tan", tan,
+                "tanh", tanh,
+                "erf", erf,
+                "erfc", erfc,
+                "j0", j0,
+                "j1", j1,
+                "lgamma", lgamma,
+                "y0", y0,
+                "y1", y1,
+                "acosh", acosh,
+                "asinh", asinh,
+                "atanh", atanh,
+                "cbrt", cbrt,
+                "expm1", expm1,
+                "logb", logb,
+                "rint", rint,
+                0, 0
+        };
 
+struct init_constants {
+    char *name;
+    double value;
+};
 
-    switch (index) {
+struct init_constants arith_constants[] = {
+        "e", M_E,
+        "pi", M_PI,
+        0, 0
+};
 
-        case (0):
-            strcpy(name, "acos");
-            break;
-        case (1):
-            strcpy(name, "asin");
-            break;
-        case (2):
-            strcpy(name, "atan");
-            break;
-        case (3):
-            strcpy(name, "ceil");
-            break;
-        case (4):
-            strcpy(name, "cos");
-            break;
-        case (5):
-            strcpy(name, "cosh");
-            break;
-        case (6):
-            strcpy(name, "exp");
-            break;
-        case (7):
-            strcpy(name, "fabs");
-            break;
-        case (8):
-            strcpy(name, "floor");
-            break;
-        case (9):
-            strcpy(name, "log");
-            break;
-        case (10):
-            strcpy(name, "log10");
-            break;
-        case (11):
-            strcpy(name, "sin");
-            break;
-        case (12):
-            strcpy(name, "sinh");
-            break;
-        case (13):
-            strcpy(name, "sqrt");
-            break;
-        case (14):
-            strcpy(name, "tan");
-            break;
-        case (15):
-            strcpy(name, "tanh");
-            break;
-        case (16):
-            strcpy(name, "erf");
-            break;
-        case (17):
-            strcpy(name, "erfc");
-            break;
-        case (18):
-            strcpy(name, "j0");
-            break;
-        case (19):
-            strcpy(name, "j1");
-            break;
-        case (20):
-            strcpy(name, "lgamma");
-            break;
-        case (21):
-            strcpy(name, "y0");
-            break;
-        case (22):
-            strcpy(name, "y1");
-            break;
-        case (23):
-            strcpy(name, "acosh");
-            break;
-        case (24):
-            strcpy(name, "asinh");
-            break;
-        case (25):
-            strcpy(name, "atanh");
-            break;
-        case (26):
-            strcpy(name, "cbrt");
-            break;
-        case (27):
-            strcpy(name, "expm1");
-            break;
-        case (28):
-            strcpy(name, "logb");
-            break;
-        case (29):
-            strcpy(name, "rint");
-            break;
-        default:
-            manageFatalError(ERR_CANT_PARSE_FUNCTION, "Cannot find a name for a function while parsing.");
-            break;
+void parseConstants(symbolTable **oSymbolTable) {
+
+    char *key = NULL;
+    unsigned short index = 0;
+    int i;
+
+    for (i = 0; arith_constants[i].name != 0; i++) {
+
+        symbolData *msymbolData = (symbolData *) malloc(sizeof(symbolData));
+        variableContent *mVariableContent = (variableContent *) malloc(sizeof(variableContent));
+        key = (char *) malloc(sizeof(char) * 10);
+        mVariableContent->value.columns = 1;
+        mVariableContent->value.rows = 1;
+        mVariableContent->value.defAsMatrix = 0;
+        mVariableContent->value.values = malloc(sizeof(double *));
+        mVariableContent->value.values[0] = malloc(sizeof(double));
+        mVariableContent->value.values[0][0] = (arith_constants[i].value);
+        mVariableContent->defined = 1;
+        mVariableContent->name = (char *) malloc(sizeof(char) * 10);
+
+        strcpy(key, arith_constants[i].name);
+        strcpy(mVariableContent->name, key);
+        msymbolData->type = TYPE_CONSTANT;
+        msymbolData->content = mVariableContent;
+        addElement(((*oSymbolTable)->identifiers), key, (void *) msymbolData);
     }
 
-    return;
 }
 
 void parseFunctions(symbolTable **oSymbolTable) {
     char *key = NULL;
     unsigned short index = 0;
-    while (functions[index]) {
+    int i;
+    for (i = 0; arith_fncts[i].fname != 0; i++) {
+
         symbolData *msymbolData = (symbolData *) malloc(sizeof(symbolData));
         functionContent *mfunctionContent = (functionContent *) malloc(sizeof(functionContent));
-        mfunctionContent->funcPointer = functions[index];
+        key = (char *) malloc(sizeof(char) * 10);
+        mfunctionContent->funcPointer = (arith_fncts[i].fnct);
         msymbolData->type = TYPE_FUNCTION;
         msymbolData->content = mfunctionContent;
-        key = (char *) malloc(sizeof(char) * 10);
-        getNameOf(index, key);
+        strcpy(key, arith_fncts[i].fname);
         addElement(((*oSymbolTable)->reserved), key, (void *) msymbolData);
-        index++;
     }
+
+
     printReservedWords(*oSymbolTable);
 }

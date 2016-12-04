@@ -44,7 +44,8 @@ typedef struct {
 
 typedef enum {
     TYPE_VARIABLE,
-    TYPE_FUNCTION
+    TYPE_FUNCTION,
+    TYPE_CONSTANT
 } symbolType;
 
 
@@ -63,5 +64,10 @@ void printSymbolTable(symbolTable *oSymbolTable);
 void printReservedWords(symbolTable *oSymbolTable);
 
 void printVariables(symbolTable *oSymbolTable);
+
+void clearVariables(symbolTable *oSymbolTable);
+
+void printMatrix(variableValue vv);
+
 
 #endif //BDC_SYMBOLTABLE_H

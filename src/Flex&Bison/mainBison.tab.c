@@ -66,7 +66,7 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     FLOAT_VALUE = 258,
+     NUMBER_LITERAL = 258,
      VARIABLE = 259,
      ONE_OPERATOR_FUNCTION = 260,
      END_OF_FILE = 261,
@@ -83,7 +83,7 @@
      OPE_EQ_EQ = 272,
      OPE_TIMES_EQ = 273,
      OPE_PERC_EQ = 274,
-     NEWLINE = 275,
+     NEW_LINE = 275,
      QUIT = 276,
      HELP = 277,
      DECLARE = 278,
@@ -94,7 +94,7 @@
    };
 #endif
 /* Tokens.  */
-#define FLOAT_VALUE 258
+#define NUMBER_LITERAL 258
 #define VARIABLE 259
 #define ONE_OPERATOR_FUNCTION 260
 #define END_OF_FILE 261
@@ -111,7 +111,7 @@
 #define OPE_EQ_EQ 272
 #define OPE_TIMES_EQ 273
 #define OPE_PERC_EQ 274
-#define NEWLINE 275
+#define NEW_LINE 275
 #define QUIT 276
 #define HELP 277
 #define DECLARE 278
@@ -139,9 +139,14 @@
 Reference to the global symbol table
 */
 extern symbolTable *global_st;
+
+
 extern int yylex();
 extern int yyparse();
 void yyerror(char* s);
+
+
+
 void showWarning(char *s);
 short defined(variableContent *vc,unsigned short assign);
 short isMatrix(variableContent *vc);
@@ -153,10 +158,9 @@ short sameSize(variableValue vc1, variableValue vc2);
 void defOneNumberMatrix(variableValue *vv, double number);
 void copyMatrix (variableValue *dest, variableContent *vc);
 void copyExpression (variableValue *dest, variableValue *src);
+void copyExpressionWFree(variableValue *dest, variableValue *src);
 void freeMatrix(variableValue *vv);
-void printMatrix(variableValue vv);
-
-
+void generateMatrix (variableValue *dest, int rows, int columns);
 
 
 
@@ -181,14 +185,14 @@ void printMatrix(variableValue vv);
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 41 "mainBison.y"
+#line 44 "mainBison.y"
 {
         variableValue matrixVal;
         double val;
         symbolData *pts;
 }
 /* Line 193 of yacc.c.  */
-#line 192 "mainBison.tab.c"
+#line 196 "mainBison.tab.c"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
@@ -201,7 +205,7 @@ typedef union YYSTYPE
 
 
 /* Line 216 of yacc.c.  */
-#line 205 "mainBison.tab.c"
+#line 209 "mainBison.tab.c"
 
 #ifdef short
 # undef short
@@ -507,11 +511,11 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    79,    79,    80,    83,    84,    85,    86,    87,    91,
-      92,    93,    94,   101,   139,   169,   183,   187,   198,   213,
-     244,   265,   292,   324,   357,   379,   402,   426,   450,   470,
-     491,   511,   532,   552,   575,   595,   618,   619,   635,   655,
-     668,   679,   693,   719,   744,   757,   769,   784
+       0,    81,    81,    82,    85,    86,    87,    88,    89,    93,
+      94,    95,    96,   103,   141,   171,   185,   189,   200,   215,
+     246,   267,   294,   326,   359,   396,   419,   443,   467,   487,
+     508,   528,   549,   569,   592,   612,   635,   666,   686,   706,
+     719,   730,   744,   770,   795,   808,   821,   837
 };
 #endif
 
@@ -520,13 +524,13 @@ static const yytype_uint16 yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "FLOAT_VALUE", "VARIABLE",
+  "$end", "error", "$undefined", "NUMBER_LITERAL", "VARIABLE",
   "ONE_OPERATOR_FUNCTION", "END_OF_FILE", "'+'", "'-'", "'*'", "'/'",
   "'('", "')'", "OPE_SLASH_EQ", "OPE_AND_AND", "OPE_VERT_VERT",
   "OPE_MINUS_EQ", "OPE_MINUS_MINUS", "OPE_PLUS_EQ", "'<'", "OPE_PLUS_PLUS",
   "'>'", "OPE_LESSTHAN_EQ", "'!'", "OPE_MORETHAN_EQ", "OPE_EXCL_EQ",
   "OPE_EQ_EQ", "OPE_TIMES_EQ", "'['", "OPE_PERC_EQ", "']'", "';'", "'%'",
-  "NEWLINE", "QUIT", "HELP", "DECLARE", "EXISTS_VARIABLE",
+  "NEW_LINE", "QUIT", "HELP", "DECLARE", "EXISTS_VARIABLE",
   "CLEAR_VARIABLES", "LIST_VARIABLES", "'='", "NEGATE", "$accept",
   "calculation", "line", "declaration", "EXPRESSION", 0
 };
@@ -1524,50 +1528,50 @@ yyreduce:
   switch (yyn)
     {
         case 5:
-#line 84 "mainBison.y"
-    { printf( BLU "\tSuccesfull declaration\n" RESET);;}
+#line 86 "mainBison.y"
+    { printf( BLU "\tSuccesfull declaration\n" RESET); ;}
     break;
 
   case 6:
-#line 85 "mainBison.y"
+#line 87 "mainBison.y"
     { ;}
     break;
 
   case 7:
-#line 86 "mainBison.y"
+#line 88 "mainBison.y"
     { ;}
     break;
 
   case 8:
-#line 87 "mainBison.y"
+#line 89 "mainBison.y"
     { printf(BLU);
                                     printMatrix((yyvsp[(1) - (2)].matrixVal));
                                     printf(RESET);
-                                    ;}
+                                  ;}
     break;
 
   case 9:
-#line 91 "mainBison.y"
+#line 93 "mainBison.y"
     { yyerrok; ;}
     break;
 
   case 10:
-#line 92 "mainBison.y"
+#line 94 "mainBison.y"
     { printfHelp(); ;}
     break;
 
   case 11:
-#line 93 "mainBison.y"
+#line 95 "mainBison.y"
     { YYACCEPT; ;}
     break;
 
   case 12:
-#line 94 "mainBison.y"
+#line 96 "mainBison.y"
     { YYACCEPT; ;}
     break;
 
   case 13:
-#line 101 "mainBison.y"
+#line 103 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(2) - (8)].pts)->content;
                                   if(defined(vc,0)){
@@ -1608,7 +1612,7 @@ yyreduce:
     break;
 
   case 14:
-#line 139 "mainBison.y"
+#line 141 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(2) - (5)].pts)->content;
                                   if(defined(vc,0)){
@@ -1642,7 +1646,7 @@ yyreduce:
     break;
 
   case 15:
-#line 169 "mainBison.y"
+#line 171 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(2) - (2)].pts)->content;
                                   if(defined(vc,0)){
@@ -1655,7 +1659,7 @@ yyreduce:
     break;
 
   case 16:
-#line 183 "mainBison.y"
+#line 185 "mainBison.y"
     {
                                   defOneNumberMatrix(&(yyval.matrixVal),(yyvsp[(1) - (1)].val));
 
@@ -1663,7 +1667,7 @@ yyreduce:
     break;
 
   case 17:
-#line 187 "mainBison.y"
+#line 189 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (1)].pts)->content;
                                   if(!defined(vc,0)){
@@ -1676,7 +1680,7 @@ yyreduce:
     break;
 
   case 18:
-#line 198 "mainBison.y"
+#line 200 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
                                   if(!defined(vc,0)){
@@ -1695,7 +1699,7 @@ yyreduce:
     break;
 
   case 19:
-#line 213 "mainBison.y"
+#line 215 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (9)].pts)->content;
                                   if(!defined(vc,0)){
@@ -1729,7 +1733,7 @@ yyreduce:
     break;
 
   case 20:
-#line 244 "mainBison.y"
+#line 246 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (6)].pts)->content;
                                   if(!defined(vc,0)){
@@ -1754,7 +1758,7 @@ yyreduce:
     break;
 
   case 21:
-#line 265 "mainBison.y"
+#line 267 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
                                   if(!defined(vc,1)){
@@ -1785,7 +1789,7 @@ yyreduce:
     break;
 
   case 22:
-#line 292 "mainBison.y"
+#line 294 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
                                   if(!defined(vc,1)){
@@ -1821,7 +1825,7 @@ yyreduce:
     break;
 
   case 23:
-#line 324 "mainBison.y"
+#line 326 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
                                   if(!defined(vc,1)){
@@ -1858,9 +1862,10 @@ yyreduce:
     break;
 
   case 24:
-#line 357 "mainBison.y"
+#line 359 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
+                                  variableValue vv = vc->value;
                                   if(!defined(vc,1)){
                                     yyerror("Variable not declared");
                                     YYERROR;
@@ -1877,14 +1882,28 @@ yyreduce:
                                           copyMatrix(&(yyval.matrixVal),vc);
                                           freeMatrix(&(yyvsp[(3) - (3)].matrixVal));
                                   }else{
-                                        //TODO
-
+                                          if((vv.columns != (yyvsp[(3) - (3)].matrixVal).rows) || ((vv.rows != (yyvsp[(3) - (3)].matrixVal).columns))){
+                                            yyerror("Matrices must be the same size");
+                                            YYERROR;
+                                          }
+                                          int i,j,k;
+                                          generateMatrix(&(yyval.matrixVal),vv.rows,(yyvsp[(3) - (3)].matrixVal).columns);
+                                          for (i=0;i<(yyval.matrixVal).rows;i++){
+                                                for (j=0;j<(yyval.matrixVal).columns;j++){
+                                                    (yyval.matrixVal).values[i][j]=0;
+                                                    for(k=0;k<vv.columns;k++){
+                                                        (yyval.matrixVal).values[i][j]+=vv.values[i][k]*(yyvsp[(3) - (3)].matrixVal).values[k][j];
+                                                    }
+                                                }
+                                          }
+                                          copyExpression(&(vc->value),&(yyval.matrixVal));
+                                          freeMatrix(&(yyvsp[(3) - (3)].matrixVal));
                                   }
                                   ;}
     break;
 
   case 25:
-#line 379 "mainBison.y"
+#line 396 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
                                   if(!defined(vc,1)){
@@ -1908,7 +1927,7 @@ yyreduce:
     break;
 
   case 26:
-#line 402 "mainBison.y"
+#line 419 "mainBison.y"
     {
 
                                   if(!sameSize((yyvsp[(1) - (3)].matrixVal),(yyvsp[(3) - (3)].matrixVal)) && (!isSingleNumber((yyvsp[(3) - (3)].matrixVal)))){
@@ -1933,7 +1952,7 @@ yyreduce:
     break;
 
   case 27:
-#line 426 "mainBison.y"
+#line 443 "mainBison.y"
     {
                                   if(!sameSize((yyvsp[(1) - (3)].matrixVal),(yyvsp[(3) - (3)].matrixVal)) && (!isSingleNumber((yyvsp[(3) - (3)].matrixVal)))){
                                     yyerror("Matrix have different size or second parameter is not only an element");
@@ -1957,7 +1976,7 @@ yyreduce:
     break;
 
   case 28:
-#line 450 "mainBison.y"
+#line 467 "mainBison.y"
     {
                                   if(!sameSize((yyvsp[(1) - (3)].matrixVal),(yyvsp[(3) - (3)].matrixVal)) && (!isSingleNumber((yyvsp[(3) - (3)].matrixVal)))){
                                     yyerror("Matrix have different size or second parameter is not only an element");
@@ -1981,7 +2000,7 @@ yyreduce:
     break;
 
   case 29:
-#line 470 "mainBison.y"
+#line 487 "mainBison.y"
     {
                                   if(!sameSize((yyvsp[(1) - (3)].matrixVal),(yyvsp[(3) - (3)].matrixVal)) && (!isSingleNumber((yyvsp[(3) - (3)].matrixVal)))){
                                     yyerror("Matrix have different size or second parameter is not only an element");
@@ -2005,7 +2024,7 @@ yyreduce:
     break;
 
   case 30:
-#line 491 "mainBison.y"
+#line 508 "mainBison.y"
     {
                                   if(!sameSize((yyvsp[(1) - (3)].matrixVal),(yyvsp[(3) - (3)].matrixVal)) && (!isSingleNumber((yyvsp[(3) - (3)].matrixVal)))){
                                     yyerror("Matrix have different size or second parameter is not only an element");
@@ -2029,7 +2048,7 @@ yyreduce:
     break;
 
   case 31:
-#line 511 "mainBison.y"
+#line 528 "mainBison.y"
     {
                                   if(!sameSize((yyvsp[(1) - (3)].matrixVal),(yyvsp[(3) - (3)].matrixVal)) && (!isSingleNumber((yyvsp[(3) - (3)].matrixVal)))){
                                     yyerror("Matrix have different size or second parameter is not only an element");
@@ -2053,7 +2072,7 @@ yyreduce:
     break;
 
   case 32:
-#line 532 "mainBison.y"
+#line 549 "mainBison.y"
     {
                                   if(!sameSize((yyvsp[(1) - (3)].matrixVal),(yyvsp[(3) - (3)].matrixVal)) && (!isSingleNumber((yyvsp[(3) - (3)].matrixVal)))){
                                     yyerror("Matrix have different size or second parameter is not only an element");
@@ -2077,7 +2096,7 @@ yyreduce:
     break;
 
   case 33:
-#line 552 "mainBison.y"
+#line 569 "mainBison.y"
     {
                                   if(!sameSize((yyvsp[(1) - (3)].matrixVal),(yyvsp[(3) - (3)].matrixVal)) && (!isSingleNumber((yyvsp[(3) - (3)].matrixVal)))){
                                     yyerror("Matrix have different size or second parameter is not only an element");
@@ -2101,7 +2120,7 @@ yyreduce:
     break;
 
   case 34:
-#line 575 "mainBison.y"
+#line 592 "mainBison.y"
     {
                                   if(!sameSize((yyvsp[(1) - (3)].matrixVal),(yyvsp[(3) - (3)].matrixVal)) && (!isSingleNumber((yyvsp[(3) - (3)].matrixVal)))){
                                     yyerror("Matrix have different size or second parameter is not only an element");
@@ -2125,7 +2144,7 @@ yyreduce:
     break;
 
   case 35:
-#line 595 "mainBison.y"
+#line 612 "mainBison.y"
     {
                                   if(!sameSize((yyvsp[(1) - (3)].matrixVal),(yyvsp[(3) - (3)].matrixVal)) && (!isSingleNumber((yyvsp[(3) - (3)].matrixVal)))){
                                     yyerror("Matrix have different size or second parameter is not only an element");
@@ -2149,15 +2168,49 @@ yyreduce:
     break;
 
   case 36:
-#line 618 "mainBison.y"
-    { /*$$ = $1 * $3;*/ ;}
+#line 635 "mainBison.y"
+    {
+                                if(isSingleNumber((yyvsp[(3) - (3)].matrixVal))){
+                                  int i,j;
+                                  copyExpression(&(yyval.matrixVal),&(yyvsp[(1) - (3)].matrixVal));
+                                  for (i=0;i<(yyvsp[(1) - (3)].matrixVal).rows;i++){
+                                        for (j=0;j<(yyvsp[(1) - (3)].matrixVal).columns;j++)
+                                        {
+                                            (yyval.matrixVal).values[i][j] = ((yyvsp[(1) - (3)].matrixVal).values[i][j]) * ((yyvsp[(3) - (3)].matrixVal).values[0][0]);
+                                        }
+                                  }
+                                  freeMatrix(&(yyvsp[(1) - (3)].matrixVal));
+                                  freeMatrix(&(yyvsp[(3) - (3)].matrixVal));
+                                }else{
+                                      if((yyvsp[(1) - (3)].matrixVal).columns != (yyvsp[(3) - (3)].matrixVal).rows){
+                                        yyerror("Rows of the first matrix must match columns of the second one");
+                                        YYERROR;
+                                      }
+                                      int i,j,k;
+                                      generateMatrix(&(yyval.matrixVal),(yyvsp[(1) - (3)].matrixVal).rows,(yyvsp[(3) - (3)].matrixVal).columns);
+                                      for (i=0;i<(yyval.matrixVal).rows;i++){
+                                            for (j=0;j<(yyval.matrixVal).columns;j++){
+                                                (yyval.matrixVal).values[i][j]=0;
+                                                for(k=0;k<(yyvsp[(1) - (3)].matrixVal).columns;k++){
+                                                    (yyval.matrixVal).values[i][j]+=(yyvsp[(1) - (3)].matrixVal).values[i][k]*(yyvsp[(3) - (3)].matrixVal).values[k][j];
+                                                }
+                                            }
+                                      }
+                                      freeMatrix(&(yyvsp[(1) - (3)].matrixVal));
+                                      freeMatrix(&(yyvsp[(3) - (3)].matrixVal));
+                                      }
+                              ;}
     break;
 
   case 37:
-#line 619 "mainBison.y"
+#line 666 "mainBison.y"
     {
                                   if(!isSingleNumber((yyvsp[(3) - (3)].matrixVal))){
                                     yyerror("Second expression cannot be a matrix");
+                                    YYERROR;
+                                  }
+                                  if((yyvsp[(3) - (3)].matrixVal).values[0][0]==0){
+                                    yyerror("You cannot divide by zero");
                                     YYERROR;
                                   }
                                   int i,j;
@@ -2174,7 +2227,7 @@ yyreduce:
     break;
 
   case 38:
-#line 635 "mainBison.y"
+#line 686 "mainBison.y"
     {
                                   if(!isSingleNumber((yyvsp[(3) - (3)].matrixVal))){
                                     yyerror("Second expression cannot be a matrix");
@@ -2194,7 +2247,7 @@ yyreduce:
     break;
 
   case 39:
-#line 655 "mainBison.y"
+#line 706 "mainBison.y"
     {
                       int i,j;
                       copyExpression(&(yyval.matrixVal),&(yyvsp[(2) - (2)].matrixVal));
@@ -2209,7 +2262,7 @@ yyreduce:
     break;
 
   case 40:
-#line 668 "mainBison.y"
+#line 719 "mainBison.y"
     {
                                   int i,j;
                                   copyExpression(&(yyval.matrixVal),&(yyvsp[(2) - (2)].matrixVal));
@@ -2224,7 +2277,7 @@ yyreduce:
     break;
 
   case 41:
-#line 679 "mainBison.y"
+#line 730 "mainBison.y"
     {
                       int i,j;
                       copyExpression(&(yyval.matrixVal),&(yyvsp[(2) - (2)].matrixVal));
@@ -2239,7 +2292,7 @@ yyreduce:
     break;
 
   case 42:
-#line 693 "mainBison.y"
+#line 744 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (7)].pts)->content;
                                   if(!defined(vc,0)){
@@ -2268,7 +2321,7 @@ yyreduce:
     break;
 
   case 43:
-#line 719 "mainBison.y"
+#line 770 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (4)].pts)->content;
                                   if(!defined(vc,0)){
@@ -2293,11 +2346,11 @@ yyreduce:
     break;
 
   case 44:
-#line 744 "mainBison.y"
+#line 795 "mainBison.y"
     {
                                   functionContent *fc= (functionContent*) (yyvsp[(1) - (4)].pts)->content;
                                   if(!isSingleNumber((yyvsp[(3) - (4)].matrixVal))){
-                                    yyerror("Functions only applyable to single numbers, put a point before it");
+                                    yyerror("Functions only applyable to single numbers");
                                     YYERROR;
                                   }
                                   double aux = (*(fc->funcPointer))((yyvsp[(3) - (4)].matrixVal).values[0][0]);
@@ -2306,7 +2359,7 @@ yyreduce:
     break;
 
   case 45:
-#line 757 "mainBison.y"
+#line 808 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (2)].pts)->content;
                                   if(!defined(vc,1)){
@@ -2314,7 +2367,8 @@ yyreduce:
                                     YYERROR;
                                   }
                                   if(!isSingleNumber(vc->value)){
-                                    yyerror("Trying to use '++' operator on matrix, use 'matrix = matrix.+ 1' instead");
+                                    yyerror("Trying to use '++' operator on matrix, use 'matrix += 1' instead");
+                                    YYERROR;
                                   }
                                   vc->value.values[0][0]++;
                                   copyMatrix(&(yyval.matrixVal),vc);
@@ -2322,7 +2376,7 @@ yyreduce:
     break;
 
   case 46:
-#line 769 "mainBison.y"
+#line 821 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (2)].pts)->content;
                                   if(!defined(vc,1)){
@@ -2331,6 +2385,7 @@ yyreduce:
                                   }
                                   if(!isSingleNumber(vc->value)){
                                     yyerror("Trying to use '++' operator on matrix, use 'matrix = matrix.+ 1' instead");
+                                    YYERROR;
                                   }
                                   vc->value.values[0][0]--;
                                   copyMatrix(&(yyval.matrixVal),vc);
@@ -2338,13 +2393,13 @@ yyreduce:
     break;
 
   case 47:
-#line 784 "mainBison.y"
+#line 837 "mainBison.y"
     { (yyval.matrixVal) = (yyvsp[(2) - (3)].matrixVal); ;}
     break;
 
 
 /* Line 1267 of yacc.c.  */
-#line 2348 "mainBison.tab.c"
+#line 2403 "mainBison.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2558,7 +2613,7 @@ yyreturn:
 }
 
 
-#line 789 "mainBison.y"
+#line 842 "mainBison.y"
 
 
 void yyerror (char *s){
@@ -2640,17 +2695,6 @@ void freeMatrix(variableValue *vv){
   }
 }
 
-void printMatrix(variableValue vv){
-  int i,j;
-   for (i=0;i<vv.rows;i++)
-   {
-       for (j=0;j<vv.columns;j++)
-       {
-           printf(" %5g ", vv.values[i][j]);
-       }
-       printf("\n");
-   }
-}
 
 short sameSize(variableValue vc1, variableValue vc2){
   return ((vc1.rows==vc2.rows) && (vc1.columns==vc2.columns));
@@ -2676,5 +2720,37 @@ void copyExpression (variableValue *dest, variableValue *src){
     dest->values[i]=malloc(src->columns * sizeof(double));
     memcpy(dest->values[i], src->values[i], src->columns * sizeof(double));
   }
+}
+
+void generateMatrix (variableValue *dest, int rows, int columns){
+  int i;
+  dest->rows=rows;
+  dest->columns=columns;
+  dest->defAsMatrix=1;
+  dest->values = malloc(sizeof(double*)*rows);
+  for(i = 0; i < rows ; ++ i){
+    dest->values[i]=malloc(columns * sizeof(double));
+  }
+}
+
+void copyExpressionWFree(variableValue *dest, variableValue *src){
+  int i;
+  dest->rows=src->rows;
+  dest->columns=src->columns;
+  dest->defAsMatrix=src->defAsMatrix;
+
+  for(i = 0; i < src->rows ; ++ i){
+    free(dest->values[i]);
+  }
+  free(dest->values);
+
+  dest->values = malloc(sizeof(double*) * (src->rows));
+  memcpy(dest->values,src->values,(src->rows) * sizeof(double*));
+  for(i = 0; i < src->rows ; ++ i){
+    dest->values[i]=malloc(src->columns * sizeof(double));
+    memcpy(dest->values[i], src->values[i], src->columns * sizeof(double));
+  }
+
+
 }
 

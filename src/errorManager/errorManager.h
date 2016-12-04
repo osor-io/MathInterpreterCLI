@@ -12,7 +12,8 @@ typedef enum {
     ERR_SCAPE_CHAR,
     ERR_CANT_PARSE_FUNCTION,
     ERR_BISON,
-    WAR_BISON
+    WAR_BISON,
+    ERR_NONRECOGCHAR
 } errorType;
 
 

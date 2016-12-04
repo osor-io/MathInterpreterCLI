@@ -19,6 +19,7 @@ void initSymbolTable(symbolTable **oSymbolTable) {
     initHashTable(&((*oSymbolTable)->reserved));
 
     parseFunctions(oSymbolTable);             //We parse the reserved words from a file with the parser.
+    parseConstants(oSymbolTable);
 
 }
 
@@ -71,10 +72,29 @@ void printSymbolTable(symbolTable *oSymbolTable) {
 void printReservedWords(symbolTable *oSymbolTable){
     printf(GRN "FUNCTIONS CURRENTLY SUPPORTED:\n" RESET);
     printDataSorted(*oSymbolTable->reserved,0);
-
+    printf("\n");
 }
 
 void printVariables(symbolTable *oSymbolTable){
     printf(GRN "\n\nVARIABLES CURRENTLY DEFINED:\n\n" RESET);
-    printDataSorted(*oSymbolTable->identifiers,0);
+    printAllVariables(*oSymbolTable->identifiers);
+    printf("\n");
+}
+
+void clearVariables(symbolTable *oSymbolTable){
+    deleteHastTable(&((oSymbolTable)->identifiers));
+    initHashTable(&((oSymbolTable)->identifiers));
+    parseConstants(&oSymbolTable);
+}
+
+void printMatrix(variableValue vv){
+    int i,j;
+    for (i=0;i<vv.rows;i++)
+    {
+        for (j=0;j<vv.columns;j++)
+        {
+            printf(" %5g ", vv.values[i][j]);
+        }
+        printf("\n");
+    }
 }

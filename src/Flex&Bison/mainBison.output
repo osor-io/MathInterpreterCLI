@@ -12,21 +12,21 @@ Grammar
     1 calculation: /* empty */
     2            | calculation line
 
-    3 line: NEWLINE
-    4     | declaration NEWLINE
-    5     | declaration ';' NEWLINE
-    6     | EXPRESSION ';' NEWLINE
-    7     | EXPRESSION NEWLINE
-    8     | error NEWLINE
-    9     | HELP NEWLINE
-   10     | QUIT NEWLINE
+    3 line: NEW_LINE
+    4     | declaration NEW_LINE
+    5     | declaration ';' NEW_LINE
+    6     | EXPRESSION ';' NEW_LINE
+    7     | EXPRESSION NEW_LINE
+    8     | error NEW_LINE
+    9     | HELP NEW_LINE
+   10     | QUIT NEW_LINE
    11     | END_OF_FILE
 
    12 declaration: DECLARE VARIABLE '[' EXPRESSION ']' '[' EXPRESSION ']'
    13            | DECLARE VARIABLE '[' EXPRESSION ']'
    14            | DECLARE VARIABLE
 
-   15 EXPRESSION: FLOAT_VALUE
+   15 EXPRESSION: NUMBER_LITERAL
    16           | VARIABLE
    17           | VARIABLE '=' EXPRESSION
    18           | VARIABLE '[' EXPRESSION ']' '[' EXPRESSION ']' '=' EXPRESSION
@@ -78,7 +78,7 @@ $end (0) 0
 '[' (91) 12 13 18 19 41 42
 ']' (93) 12 13 18 19 41 42
 error (256) 8
-FLOAT_VALUE (258) 15
+NUMBER_LITERAL (258) 15
 VARIABLE (259) 12 13 14 16 17 18 19 20 21 22 23 24 41 42 44 45
 ONE_OPERATOR_FUNCTION (260) 43
 END_OF_FILE (261) 11
@@ -95,7 +95,7 @@ OPE_EXCL_EQ (271) 28
 OPE_EQ_EQ (272) 27
 OPE_TIMES_EQ (273) 23
 OPE_PERC_EQ (274) 24
-NEWLINE (275) 3 4 5 6 7 8 9 10
+NEW_LINE (275) 3 4 5 6 7 8 9 10
 QUIT (276) 10
 HELP (277) 9
 DECLARE (278) 12 13 14
@@ -138,7 +138,7 @@ state 1
 
     $end                   shift, and go to state 2
     error                  shift, and go to state 3
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     END_OF_FILE            shift, and go to state 7
@@ -146,7 +146,7 @@ state 1
     '-'                    shift, and go to state 9
     '('                    shift, and go to state 10
     '!'                    shift, and go to state 11
-    NEWLINE                shift, and go to state 12
+    NEW_LINE               shift, and go to state 12
     QUIT                   shift, and go to state 13
     HELP                   shift, and go to state 14
     DECLARE                shift, and go to state 15
@@ -165,14 +165,14 @@ state 2
 
 state 3
 
-    8 line: error . NEWLINE
+    8 line: error . NEW_LINE
 
-    NEWLINE  shift, and go to state 19
+    NEW_LINE  shift, and go to state 19
 
 
 state 4
 
-   15 EXPRESSION: FLOAT_VALUE .
+   15 EXPRESSION: NUMBER_LITERAL .
 
     $default  reduce using rule 15 (EXPRESSION)
 
@@ -224,7 +224,7 @@ state 8
 
    40 EXPRESSION: '+' . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -239,7 +239,7 @@ state 9
 
    39 EXPRESSION: '-' . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -254,7 +254,7 @@ state 10
 
    46 EXPRESSION: '(' . EXPRESSION ')'
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -269,7 +269,7 @@ state 11
 
    38 EXPRESSION: '!' . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -282,23 +282,23 @@ state 11
 
 state 12
 
-    3 line: NEWLINE .
+    3 line: NEW_LINE .
 
     $default  reduce using rule 3 (line)
 
 
 state 13
 
-   10 line: QUIT . NEWLINE
+   10 line: QUIT . NEW_LINE
 
-    NEWLINE  shift, and go to state 34
+    NEW_LINE  shift, and go to state 34
 
 
 state 14
 
-    9 line: HELP . NEWLINE
+    9 line: HELP . NEW_LINE
 
-    NEWLINE  shift, and go to state 35
+    NEW_LINE  shift, and go to state 35
 
 
 state 15
@@ -319,17 +319,17 @@ state 16
 
 state 17
 
-    4 line: declaration . NEWLINE
-    5     | declaration . ';' NEWLINE
+    4 line: declaration . NEW_LINE
+    5     | declaration . ';' NEW_LINE
 
-    ';'      shift, and go to state 37
-    NEWLINE  shift, and go to state 38
+    ';'       shift, and go to state 37
+    NEW_LINE  shift, and go to state 38
 
 
 state 18
 
-    6 line: EXPRESSION . ';' NEWLINE
-    7     | EXPRESSION . NEWLINE
+    6 line: EXPRESSION . ';' NEW_LINE
+    7     | EXPRESSION . NEW_LINE
    25 EXPRESSION: EXPRESSION . OPE_VERT_VERT EXPRESSION
    26           | EXPRESSION . OPE_AND_AND EXPRESSION
    27           | EXPRESSION . OPE_EQ_EQ EXPRESSION
@@ -358,12 +358,12 @@ state 18
     OPE_EQ_EQ        shift, and go to state 50
     ';'              shift, and go to state 51
     '%'              shift, and go to state 52
-    NEWLINE          shift, and go to state 53
+    NEW_LINE         shift, and go to state 53
 
 
 state 19
 
-    8 line: error NEWLINE .
+    8 line: error NEW_LINE .
 
     $default  reduce using rule 8 (line)
 
@@ -372,7 +372,7 @@ state 20
 
    20 EXPRESSION: VARIABLE OPE_SLASH_EQ . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -387,7 +387,7 @@ state 21
 
    21 EXPRESSION: VARIABLE OPE_MINUS_EQ . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -409,7 +409,7 @@ state 23
 
    22 EXPRESSION: VARIABLE OPE_PLUS_EQ . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -431,7 +431,7 @@ state 25
 
    23 EXPRESSION: VARIABLE OPE_TIMES_EQ . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -449,7 +449,7 @@ state 26
    41           | VARIABLE '[' . EXPRESSION ']' '[' EXPRESSION ']'
    42           | VARIABLE '[' . EXPRESSION ']'
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -464,7 +464,7 @@ state 27
 
    24 EXPRESSION: VARIABLE OPE_PERC_EQ . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -479,7 +479,7 @@ state 28
 
    17 EXPRESSION: VARIABLE '=' . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -494,7 +494,7 @@ state 29
 
    43 EXPRESSION: ONE_OPERATOR_FUNCTION '(' . EXPRESSION ')'
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -604,14 +604,14 @@ state 33
 
 state 34
 
-   10 line: QUIT NEWLINE .
+   10 line: QUIT NEW_LINE .
 
     $default  reduce using rule 10 (line)
 
 
 state 35
 
-    9 line: HELP NEWLINE .
+    9 line: HELP NEW_LINE .
 
     $default  reduce using rule 9 (line)
 
@@ -629,14 +629,14 @@ state 36
 
 state 37
 
-    5 line: declaration ';' . NEWLINE
+    5 line: declaration ';' . NEW_LINE
 
-    NEWLINE  shift, and go to state 64
+    NEW_LINE  shift, and go to state 64
 
 
 state 38
 
-    4 line: declaration NEWLINE .
+    4 line: declaration NEW_LINE .
 
     $default  reduce using rule 4 (line)
 
@@ -645,7 +645,7 @@ state 39
 
    33 EXPRESSION: EXPRESSION '+' . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -660,7 +660,7 @@ state 40
 
    34 EXPRESSION: EXPRESSION '-' . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -675,7 +675,7 @@ state 41
 
    35 EXPRESSION: EXPRESSION '*' . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -690,7 +690,7 @@ state 42
 
    36 EXPRESSION: EXPRESSION '/' . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -705,7 +705,7 @@ state 43
 
    26 EXPRESSION: EXPRESSION OPE_AND_AND . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -720,7 +720,7 @@ state 44
 
    25 EXPRESSION: EXPRESSION OPE_VERT_VERT . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -735,7 +735,7 @@ state 45
 
    31 EXPRESSION: EXPRESSION '<' . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -750,7 +750,7 @@ state 46
 
    29 EXPRESSION: EXPRESSION '>' . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -765,7 +765,7 @@ state 47
 
    32 EXPRESSION: EXPRESSION OPE_LESSTHAN_EQ . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -780,7 +780,7 @@ state 48
 
    30 EXPRESSION: EXPRESSION OPE_MORETHAN_EQ . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -795,7 +795,7 @@ state 49
 
    28 EXPRESSION: EXPRESSION OPE_EXCL_EQ . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -810,7 +810,7 @@ state 50
 
    27 EXPRESSION: EXPRESSION OPE_EQ_EQ . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -823,16 +823,16 @@ state 50
 
 state 51
 
-    6 line: EXPRESSION ';' . NEWLINE
+    6 line: EXPRESSION ';' . NEW_LINE
 
-    NEWLINE  shift, and go to state 77
+    NEW_LINE  shift, and go to state 77
 
 
 state 52
 
    37 EXPRESSION: EXPRESSION '%' . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -845,7 +845,7 @@ state 52
 
 state 53
 
-    7 line: EXPRESSION NEWLINE .
+    7 line: EXPRESSION NEW_LINE .
 
     $default  reduce using rule 7 (line)
 
@@ -1135,7 +1135,7 @@ state 63
    12 declaration: DECLARE VARIABLE '[' . EXPRESSION ']' '[' EXPRESSION ']'
    13            | DECLARE VARIABLE '[' . EXPRESSION ']'
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -1148,7 +1148,7 @@ state 63
 
 state 64
 
-    5 line: declaration ';' NEWLINE .
+    5 line: declaration ';' NEW_LINE .
 
     $default  reduce using rule 5 (line)
 
@@ -1472,7 +1472,7 @@ state 76
 
 state 77
 
-    6 line: EXPRESSION ';' NEWLINE .
+    6 line: EXPRESSION ';' NEW_LINE .
 
     $default  reduce using rule 6 (line)
 
@@ -1556,7 +1556,7 @@ state 82
    18 EXPRESSION: VARIABLE '[' EXPRESSION ']' '[' . EXPRESSION ']' '=' EXPRESSION
    41           | VARIABLE '[' EXPRESSION ']' '[' . EXPRESSION ']'
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -1571,7 +1571,7 @@ state 83
 
    19 EXPRESSION: VARIABLE '[' EXPRESSION ']' '=' . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -1664,7 +1664,7 @@ state 87
 
    12 declaration: DECLARE VARIABLE '[' EXPRESSION ']' '[' . EXPRESSION ']'
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8
@@ -1722,7 +1722,7 @@ state 90
 
    18 EXPRESSION: VARIABLE '[' EXPRESSION ']' '[' EXPRESSION ']' '=' . EXPRESSION
 
-    FLOAT_VALUE            shift, and go to state 4
+    NUMBER_LITERAL         shift, and go to state 4
     VARIABLE               shift, and go to state 5
     ONE_OPERATOR_FUNCTION  shift, and go to state 6
     '+'                    shift, and go to state 8

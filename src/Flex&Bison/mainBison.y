@@ -12,9 +12,14 @@
 Reference to the global symbol table
 */
 extern symbolTable *global_st;
+
+
 extern int yylex();
 extern int yyparse();
 void yyerror(char* s);
+
+
+
 void showWarning(char *s);
 short defined(variableContent *vc,unsigned short assign);
 short isMatrix(variableContent *vc);
@@ -26,15 +31,13 @@ short sameSize(variableValue vc1, variableValue vc2);
 void defOneNumberMatrix(variableValue *vv, double number);
 void copyMatrix (variableValue *dest, variableContent *vc);
 void copyExpression (variableValue *dest, variableValue *src);
+void copyExpressionWFree(variableValue *dest, variableValue *src);
 void freeMatrix(variableValue *vv);
-void printMatrix(variableValue vv);
-
-
+void generateMatrix (variableValue *dest, int rows, int columns);
 
 
 %}
 
-/*%define parse.lac full*/
 %error-verbose
 
 
@@ -47,11 +50,11 @@ void printMatrix(variableValue vv);
  /*%destructor  { printf("Discarding pointer to symbolData"); }*/
 
 
-%token<val> FLOAT_VALUE
+%token<val> NUMBER_LITERAL
 %token<pts> VARIABLE ONE_OPERATOR_FUNCTION
 %token END_OF_FILE
 %token '+' '-' '*' '/' '(' ')' OPE_SLASH_EQ   OPE_AND_AND OPE_VERT_VERT OPE_MINUS_EQ OPE_MINUS_MINUS OPE_PLUS_EQ OPE_PLUS_PLUS '<' OPE_LESSTHAN_EQ   '>' OPE_MORETHAN_EQ   '!' OPE_EXCL_EQ OPE_EQ_EQ OPE_TIMES_EQ OPE_PERC_EQ  '[' ']' ';' '%'
-%token NEWLINE QUIT HELP DECLARE EXISTS_VARIABLE CLEAR_VARIABLES LIST_VARIABLES
+%token NEW_LINE QUIT HELP DECLARE EXISTS_VARIABLE CLEAR_VARIABLES LIST_VARIABLES
 
 
 %right OPE_PLUS_EQ OPE_MINUS_EQ
@@ -67,7 +70,6 @@ void printMatrix(variableValue vv);
 
 %left NEGATE
 
- /*%type<matrixVal> MATRIXEXPRESSION*/
 %type<matrixVal> EXPRESSION
 
 %start calculation
@@ -80,17 +82,17 @@ calculation:
 	   | calculation line
 ;
 
-line: NEWLINE
-    | declaration NEWLINE         { printf( BLU "\tSuccesfull declaration\n" RESET);}
-    | declaration ';' NEWLINE     { }
-    | EXPRESSION ';' NEWLINE      { }
-    | EXPRESSION NEWLINE          { printf(BLU);
+line: NEW_LINE
+    | declaration NEW_LINE         { printf( BLU "\tSuccesfull declaration\n" RESET); }
+    | declaration ';' NEW_LINE     { }
+    | EXPRESSION ';' NEW_LINE      { }
+    | EXPRESSION NEW_LINE          { printf(BLU);
                                     printMatrix($1);
                                     printf(RESET);
-                                    }
-    | error NEWLINE               { yyerrok; }
-    | HELP NEWLINE                { printfHelp(); }
-    | QUIT NEWLINE                { YYACCEPT; }
+                                  }
+    | error NEW_LINE               { yyerrok; }
+    | HELP NEW_LINE                { printfHelp(); }
+    | QUIT NEW_LINE                { YYACCEPT; }
     | END_OF_FILE                 { YYACCEPT; }
 ;
 
@@ -180,7 +182,7 @@ declaration: DECLARE VARIABLE '[' EXPRESSION ']' '[' EXPRESSION ']' {
         /*---------EXPRESSIONS---------*/
         /*-----------------------------*/
 
-EXPRESSION: FLOAT_VALUE          {
+EXPRESSION: NUMBER_LITERAL          {
                                   defOneNumberMatrix(&$$,$1);
 
                                 }
@@ -356,6 +358,7 @@ EXPRESSION: FLOAT_VALUE          {
                                   }
     | VARIABLE OPE_TIMES_EQ EXPRESSION    {
                                   variableContent *vc= (variableContent*) $1->content;
+                                  variableValue vv = vc->value;
                                   if(!defined(vc,1)){
                                     yyerror("Variable not declared");
                                     YYERROR;
@@ -372,8 +375,22 @@ EXPRESSION: FLOAT_VALUE          {
                                           copyMatrix(&$$,vc);
                                           freeMatrix(&$3);
                                   }else{
-                                        //TODO
-
+                                          if((vv.columns != $3.rows) || ((vv.rows != $3.columns))){
+                                            yyerror("Matrices must be the same size");
+                                            YYERROR;
+                                          }
+                                          int i,j,k;
+                                          generateMatrix(&$$,vv.rows,$3.columns);
+                                          for (i=0;i<$$.rows;i++){
+                                                for (j=0;j<$$.columns;j++){
+                                                    $$.values[i][j]=0;
+                                                    for(k=0;k<vv.columns;k++){
+                                                        $$.values[i][j]+=vv.values[i][k]*$3.values[k][j];
+                                                    }
+                                                }
+                                          }
+                                          copyExpression(&(vc->value),&$$);
+                                          freeMatrix(&$3);
                                   }
                                   }
     | VARIABLE OPE_PERC_EQ EXPRESSION    {
@@ -614,8 +631,38 @@ EXPRESSION: FLOAT_VALUE          {
                                   }
     /*-----------END OF SUM OPERATORS-----------*/
 
-    /*-----------BEG OF PLUS OPERATORS-----------*/ //TODO
-  | EXPRESSION '*' EXPRESSION  { /*$$ = $1 * $3;*/ }
+    /*-----------BEG OF PLUS OPERATORS-----------*/
+  | EXPRESSION '*' EXPRESSION  {
+                                if(isSingleNumber($3)){
+                                  int i,j;
+                                  copyExpression(&$$,&$1);
+                                  for (i=0;i<$1.rows;i++){
+                                        for (j=0;j<$1.columns;j++)
+                                        {
+                                            $$.values[i][j] = ($1.values[i][j]) * ($3.values[0][0]);
+                                        }
+                                  }
+                                  freeMatrix(&$1);
+                                  freeMatrix(&$3);
+                                }else{
+                                      if($1.columns != $3.rows){
+                                        yyerror("Rows of the first matrix must match columns of the second one");
+                                        YYERROR;
+                                      }
+                                      int i,j,k;
+                                      generateMatrix(&$$,$1.rows,$3.columns);
+                                      for (i=0;i<$$.rows;i++){
+                                            for (j=0;j<$$.columns;j++){
+                                                $$.values[i][j]=0;
+                                                for(k=0;k<$1.columns;k++){
+                                                    $$.values[i][j]+=$1.values[i][k]*$3.values[k][j];
+                                                }
+                                            }
+                                      }
+                                      freeMatrix(&$1);
+                                      freeMatrix(&$3);
+                                      }
+                              }
 	  | EXPRESSION '/' EXPRESSION	 {
                                   if(!isSingleNumber($3)){
                                     yyerror("Second expression cannot be a matrix");
@@ -748,12 +795,12 @@ EXPRESSION: FLOAT_VALUE          {
     | ONE_OPERATOR_FUNCTION '(' EXPRESSION ')' {
                                   functionContent *fc= (functionContent*) $1->content;
                                   if(!isSingleNumber($3)){
-                                    yyerror("Functions only applyable to single numbers, put a point before it");
+                                    yyerror("Functions only applyable to single numbers");
                                     YYERROR;
                                   }
                                   double aux = (*(fc->funcPointer))($3.values[0][0]);
                                   defOneNumberMatrix(&$$,aux);
-                                  }//TODO: FUNCTIONS TO ALL MATRIX ELEMENTS
+                                  }
     /*-----------END OF FUNCTION CALLS-----------*/
 
 
@@ -765,7 +812,8 @@ EXPRESSION: FLOAT_VALUE          {
                                     YYERROR;
                                   }
                                   if(!isSingleNumber(vc->value)){
-                                    yyerror("Trying to use '++' operator on matrix, use 'matrix = matrix.+ 1' instead");
+                                    yyerror("Trying to use '++' operator on matrix, use 'matrix += 1' instead");
+                                    YYERROR;
                                   }
                                   vc->value.values[0][0]++;
                                   copyMatrix(&$$,vc);
@@ -778,6 +826,7 @@ EXPRESSION: FLOAT_VALUE          {
                                   }
                                   if(!isSingleNumber(vc->value)){
                                     yyerror("Trying to use '++' operator on matrix, use 'matrix = matrix.+ 1' instead");
+                                    YYERROR;
                                   }
                                   vc->value.values[0][0]--;
                                   copyMatrix(&$$,vc);
@@ -871,17 +920,6 @@ void freeMatrix(variableValue *vv){
   }
 }
 
-void printMatrix(variableValue vv){
-  int i,j;
-   for (i=0;i<vv.rows;i++)
-   {
-       for (j=0;j<vv.columns;j++)
-       {
-           printf(" %5g ", vv.values[i][j]);
-       }
-       printf("\n");
-   }
-}
 
 short sameSize(variableValue vc1, variableValue vc2){
   return ((vc1.rows==vc2.rows) && (vc1.columns==vc2.columns));
@@ -907,4 +945,36 @@ void copyExpression (variableValue *dest, variableValue *src){
     dest->values[i]=malloc(src->columns * sizeof(double));
     memcpy(dest->values[i], src->values[i], src->columns * sizeof(double));
   }
+}
+
+void generateMatrix (variableValue *dest, int rows, int columns){
+  int i;
+  dest->rows=rows;
+  dest->columns=columns;
+  dest->defAsMatrix=1;
+  dest->values = malloc(sizeof(double*)*rows);
+  for(i = 0; i < rows ; ++ i){
+    dest->values[i]=malloc(columns * sizeof(double));
+  }
+}
+
+void copyExpressionWFree(variableValue *dest, variableValue *src){
+  int i;
+  dest->rows=src->rows;
+  dest->columns=src->columns;
+  dest->defAsMatrix=src->defAsMatrix;
+
+  for(i = 0; i < src->rows ; ++ i){
+    free(dest->values[i]);
+  }
+  free(dest->values);
+
+  dest->values = malloc(sizeof(double*) * (src->rows));
+  memcpy(dest->values,src->values,(src->rows) * sizeof(double*));
+  for(i = 0; i < src->rows ; ++ i){
+    dest->values[i]=malloc(src->columns * sizeof(double));
+    memcpy(dest->values[i], src->values[i], src->columns * sizeof(double));
+  }
+
+
 }

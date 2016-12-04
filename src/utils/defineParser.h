@@ -4,6 +4,7 @@
 #include "../symbolTable/symbolTable.h"
 
 void parseFunctions(symbolTable **oSymbolTable);
+void parseConstants(symbolTable **oSymbolTable);
 
 
 #endif //BDC_DEFINEPARSER_H
