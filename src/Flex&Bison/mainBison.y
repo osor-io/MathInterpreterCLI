@@ -21,7 +21,7 @@ void yyerror(char* s);
 
 
 void showWarning(char *s);
-short defined(variableContent *vc,unsigned short assign);
+short defined(variableContent *vc);
 short isMatrix(variableContent *vc);
 short isVector(variableContent *vc);
 short isInBounds(int x, int y,variableContent *vc);
@@ -99,7 +99,7 @@ line: NEW_LINE
 
 declaration: DECLARE VARIABLE '[' EXPRESSION ']' '[' EXPRESSION ']' {
                                   variableContent *vc= (variableContent*) $2->content;
-                                  if(defined(vc,0)){
+                                  if(defined(vc)){
                                     yyerror("Matrix already declared");
                                     YYERROR;
                                   }
@@ -137,7 +137,7 @@ declaration: DECLARE VARIABLE '[' EXPRESSION ']' '[' EXPRESSION ']' {
 
  | DECLARE VARIABLE '[' EXPRESSION ']'{
                                   variableContent *vc= (variableContent*) $2->content;
-                                  if(defined(vc,0)){
+                                  if(defined(vc)){
                                     yyerror("Matrix already declared");
                                     YYERROR;
                                   }
@@ -167,7 +167,7 @@ declaration: DECLARE VARIABLE '[' EXPRESSION ']' '[' EXPRESSION ']' {
                                 }
  | DECLARE VARIABLE   {
                                   variableContent *vc= (variableContent*) $2->content;
-                                  if(defined(vc,0)){
+                                  if(defined(vc)){
                                     yyerror("Variable already declared");
                                     YYERROR;
                                   }
@@ -185,7 +185,7 @@ EXPRESSION: NUMBER_LITERAL          {
                                 }
     | VARIABLE                   {
                                   variableContent *vc= (variableContent*) $1->content;
-                                  if(!defined(vc,0)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -196,7 +196,7 @@ EXPRESSION: NUMBER_LITERAL          {
     /*-----------BEG OF ASSIGNING OPERATORS-----------*/
     | VARIABLE '=' EXPRESSION    {
                                   variableContent *vc= (variableContent*) $1->content;
-                                  if(!defined(vc,0)){
+                                  if(!defined(vc)){
                                     showWarning("Implicit declaration with assignment");
                                   }
                                   if(!sameSize(vc->value,$3)){
@@ -211,7 +211,7 @@ EXPRESSION: NUMBER_LITERAL          {
                                   }
     | VARIABLE '[' EXPRESSION ']' '[' EXPRESSION ']' '=' EXPRESSION {
                                   variableContent *vc= (variableContent*) $1->content;
-                                  if(!defined(vc,0)){
+                                  if(!defined(vc)){
                                     yyerror("Matrix not declared");
                                     YYERROR;
                                   }
@@ -242,7 +242,7 @@ EXPRESSION: NUMBER_LITERAL          {
 
     | VARIABLE '[' EXPRESSION ']' '=' EXPRESSION{
                                   variableContent *vc= (variableContent*) $1->content;
-                                  if(!defined(vc,0)){
+                                  if(!defined(vc)){
                                     yyerror("Vector not declared");
                                     YYERROR;
                                   }
@@ -263,7 +263,7 @@ EXPRESSION: NUMBER_LITERAL          {
                                   }
     | VARIABLE  OPE_SLASH_EQ EXPRESSION    {
                                   variableContent *vc= (variableContent*) $1->content;
-                                  if(!defined(vc,1)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -290,7 +290,7 @@ EXPRESSION: NUMBER_LITERAL          {
                                   }
     | VARIABLE OPE_MINUS_EQ EXPRESSION    {
                                   variableContent *vc= (variableContent*) $1->content;
-                                  if(!defined(vc,1)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -322,7 +322,7 @@ EXPRESSION: NUMBER_LITERAL          {
                                   }
     | VARIABLE OPE_PLUS_EQ EXPRESSION    {
                                   variableContent *vc= (variableContent*) $1->content;
-                                  if(!defined(vc,1)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -356,7 +356,7 @@ EXPRESSION: NUMBER_LITERAL          {
     | VARIABLE OPE_TIMES_EQ EXPRESSION    {
                                   variableContent *vc= (variableContent*) $1->content;
                                   variableValue vv = vc->value;
-                                  if(!defined(vc,1)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -392,7 +392,7 @@ EXPRESSION: NUMBER_LITERAL          {
                                   }
     | VARIABLE OPE_PERC_EQ EXPRESSION    {
                                   variableContent *vc= (variableContent*) $1->content;
-                                  if(!defined(vc,1)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -740,7 +740,7 @@ EXPRESSION: NUMBER_LITERAL          {
     /*-----------BEG OF MATRIX ACCESS OPERATORS-----------*/
     | VARIABLE '[' EXPRESSION ']' '[' EXPRESSION ']'  {
                                   variableContent *vc= (variableContent*) $1->content;
-                                  if(!defined(vc,0)){
+                                  if(!defined(vc)){
                                     yyerror("Matrix not declared");
                                     YYERROR;
                                   }
@@ -766,7 +766,7 @@ EXPRESSION: NUMBER_LITERAL          {
 
     | VARIABLE '[' EXPRESSION ']' {
                                   variableContent *vc= (variableContent*) $1->content;
-                                  if(!defined(vc,0)){
+                                  if(!defined(vc)){
                                     yyerror("Vector not declared");
                                     YYERROR;
                                   }
@@ -804,7 +804,7 @@ EXPRESSION: NUMBER_LITERAL          {
     /*-----------BEG OF POSTFIX INCREMENT AND DECREMENT-----------*/
     | VARIABLE OPE_PLUS_PLUS    {
                                   variableContent *vc= (variableContent*) $1->content;
-                                  if(!defined(vc,1)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -817,7 +817,7 @@ EXPRESSION: NUMBER_LITERAL          {
                                 }
     | VARIABLE OPE_MINUS_MINUS  {
                                   variableContent *vc= (variableContent*) $1->content;
-                                  if(!defined(vc,1)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -847,23 +847,8 @@ void showWarning(char *s){
 }
 
 
-short defined(variableContent *vc,unsigned short assign){
-
+short defined(variableContent *vc){
 return vc->defined;
-
-  //if(!vc->defined){
-    //We could not allow the operation by uncommenting the next line:
-    //printf( RED "Variable %s not defined by user.\n" RESET,vc->name);
-    /*if(assign){
-    printf( YEL "Variable %s not defined by user, value of 0.0f assumed and obtained value assigned.\n" RESET,vc->name);
-    }else{
-    printf( YEL "Variable %s not defined by user, value of 0.0f assumed.\n" RESET,vc->name);
-    }*/
-  //  return 0;
-//  }
-//return 1;*/
-
-
 }
 
 short isSingleNumber(variableValue vv){

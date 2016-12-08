@@ -142,7 +142,7 @@ void yyerror(char* s);
 
 
 void showWarning(char *s);
-short defined(variableContent *vc,unsigned short assign);
+short defined(variableContent *vc);
 short isMatrix(variableContent *vc);
 short isVector(variableContent *vc);
 short isInBounds(int x, int y,variableContent *vc);
@@ -1563,7 +1563,7 @@ yyreduce:
 #line 100 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(2) - (8)].pts)->content;
-                                  if(defined(vc,0)){
+                                  if(defined(vc)){
                                     yyerror("Matrix already declared");
                                     YYERROR;
                                   }
@@ -1604,7 +1604,7 @@ yyreduce:
 #line 138 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(2) - (5)].pts)->content;
-                                  if(defined(vc,0)){
+                                  if(defined(vc)){
                                     yyerror("Matrix already declared");
                                     YYERROR;
                                   }
@@ -1638,7 +1638,7 @@ yyreduce:
 #line 168 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(2) - (2)].pts)->content;
-                                  if(defined(vc,0)){
+                                  if(defined(vc)){
                                     yyerror("Variable already declared");
                                     YYERROR;
                                   }
@@ -1659,7 +1659,7 @@ yyreduce:
 #line 186 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (1)].pts)->content;
-                                  if(!defined(vc,0)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -1672,7 +1672,7 @@ yyreduce:
 #line 197 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
-                                  if(!defined(vc,0)){
+                                  if(!defined(vc)){
                                     showWarning("Implicit declaration with assignment");
                                   }
                                   if(!sameSize(vc->value,(yyvsp[(3) - (3)].matrixVal))){
@@ -1691,7 +1691,7 @@ yyreduce:
 #line 212 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (9)].pts)->content;
-                                  if(!defined(vc,0)){
+                                  if(!defined(vc)){
                                     yyerror("Matrix not declared");
                                     YYERROR;
                                   }
@@ -1725,7 +1725,7 @@ yyreduce:
 #line 243 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (6)].pts)->content;
-                                  if(!defined(vc,0)){
+                                  if(!defined(vc)){
                                     yyerror("Vector not declared");
                                     YYERROR;
                                   }
@@ -1750,7 +1750,7 @@ yyreduce:
 #line 264 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
-                                  if(!defined(vc,1)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -1781,7 +1781,7 @@ yyreduce:
 #line 291 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
-                                  if(!defined(vc,1)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -1817,7 +1817,7 @@ yyreduce:
 #line 323 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
-                                  if(!defined(vc,1)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -1855,7 +1855,7 @@ yyreduce:
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
                                   variableValue vv = vc->value;
-                                  if(!defined(vc,1)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -1895,7 +1895,7 @@ yyreduce:
 #line 393 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (3)].pts)->content;
-                                  if(!defined(vc,1)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -2284,7 +2284,7 @@ yyreduce:
 #line 741 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (7)].pts)->content;
-                                  if(!defined(vc,0)){
+                                  if(!defined(vc)){
                                     yyerror("Matrix not declared");
                                     YYERROR;
                                   }
@@ -2313,7 +2313,7 @@ yyreduce:
 #line 767 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (4)].pts)->content;
-                                  if(!defined(vc,0)){
+                                  if(!defined(vc)){
                                     yyerror("Vector not declared");
                                     YYERROR;
                                   }
@@ -2351,7 +2351,7 @@ yyreduce:
 #line 805 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (2)].pts)->content;
-                                  if(!defined(vc,1)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -2368,7 +2368,7 @@ yyreduce:
 #line 818 "mainBison.y"
     {
                                   variableContent *vc= (variableContent*) (yyvsp[(1) - (2)].pts)->content;
-                                  if(!defined(vc,1)){
+                                  if(!defined(vc)){
                                     yyerror("Variable not declared");
                                     YYERROR;
                                   }
@@ -2614,23 +2614,8 @@ void showWarning(char *s){
 }
 
 
-short defined(variableContent *vc,unsigned short assign){
-
+short defined(variableContent *vc){
 return vc->defined;
-
-  //if(!vc->defined){
-    //We could not allow the operation by uncommenting the next line:
-    //printf( RED "Variable %s not defined by user.\n" RESET,vc->name);
-    /*if(assign){
-    printf( YEL "Variable %s not defined by user, value of 0.0f assumed and obtained value assigned.\n" RESET,vc->name);
-    }else{
-    printf( YEL "Variable %s not defined by user, value of 0.0f assumed.\n" RESET,vc->name);
-    }*/
-  //  return 0;
-//  }
-//return 1;*/
-
-
 }
 
 short isSingleNumber(variableValue vv){
