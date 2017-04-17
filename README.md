@@ -1,5 +1,5 @@
 # MathInterpreterCLI (WolframBeta)
-Making an interpreter for mathematical expressions similar to a command line while learning Flex and Bison and its integration.
+An interpreter for mathematical expressions similar to a command line while learning Flex and Bison and its integration. Supports all commonly used operations with single numbers, vectors and matrices (with floats, integers, booleans, etc).
 
 To compile the program you can use the compile.sh found on the /scripts/ folder and then use run.sh or runWithLoad.sh to test it.
 
